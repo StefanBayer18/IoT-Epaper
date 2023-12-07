@@ -6,6 +6,8 @@ Grober Plan
 main
 - Klassen initalisieren
 - connect to wifi()
+- Daten auslesen
+- EPaper aktualisieren
 - putEspToSleep 15 min
 
 

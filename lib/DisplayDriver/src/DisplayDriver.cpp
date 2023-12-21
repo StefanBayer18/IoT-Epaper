@@ -1,19 +1,22 @@
 #include "DisplayDriver.h"
 
-DisplayDriver::DisplayDriver(int w, int h, int rpin, int dc, int cs, int busy){
-    width = w;
-    height = h;
+DisplayDriver::DisplayDriver(ImageDriver _img, int rpin, int dc, int cs, int busy){
+    img = _img;
     reset_pin = rpin;
     dc_pin = dc;
     cs_pin = cs;
     busy_pin = busy;
 }
 
-void DisplayDriver::sendData(int data){
+void DisplayDriver::show(){
     
 }
 
-void DisplayDriver::sendCommand(int cmd){
+void DisplayDriver::sendData(char data){
+    
+}
+
+void DisplayDriver::sendCommand(char cmd){
 
 }
 

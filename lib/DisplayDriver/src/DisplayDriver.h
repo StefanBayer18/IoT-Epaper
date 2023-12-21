@@ -1,13 +1,17 @@
+#include <ImageDriver.h>
+
 class DisplayDriver{
     public: 
-    DisplayDriver(int w, int h, int rpin, int dc, int cs, int busy);
+    DisplayDriver(ImageDriver _img, int rpin, int dc, int cs, int busy);
+    void show();
     void sleep();
     void wait_idle();
-    void sendCommand(int cmd);
+    void sendCommand(char cmd);
     void reset();
-    void sendData(int data);
+    void sendData(char data);
 
     private:
+    ImageDriver img;
     int width;
     int height;
     int reset_pin;

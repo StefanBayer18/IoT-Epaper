@@ -1,14 +1,13 @@
 #include "DisplayDriver.h"
 
-DisplayDriver::DisplayDriver(ImageDriver _img, int rpin, int dc, int cs, int busy){
-    img = _img;
+DisplayDriver::DisplayDriver(int rpin, int dc, int cs, int busy){
     reset_pin = rpin;
     dc_pin = dc;
     cs_pin = cs;
     busy_pin = busy;
 }
 
-void DisplayDriver::show(){
+void DisplayDriver::show(ImageDriver _img){
     
 }
 

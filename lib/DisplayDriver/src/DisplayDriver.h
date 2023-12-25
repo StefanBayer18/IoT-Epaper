@@ -2,8 +2,8 @@
 
 class DisplayDriver{
     public: 
-    DisplayDriver(ImageDriver _img, int rpin, int dc, int cs, int busy);
-    void show();
+    DisplayDriver(int rpin, int dc, int cs, int busy);
+    void show(ImageDriver _img);
     void sleep();
     void wait_idle();
     void sendCommand(char cmd);

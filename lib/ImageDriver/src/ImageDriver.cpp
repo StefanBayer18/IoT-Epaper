@@ -15,7 +15,7 @@ void ImageDriver::addImage(){
 }
 
 void ImageDriver::addLine(int x1, int y1, int x2, int y2){
-
+    
 }
 
 void ImageDriver::addPoint(int x, int y){

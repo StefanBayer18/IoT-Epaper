@@ -1,8 +1,9 @@
 #include <ImageDriver.h>
+#include "driver/gpio.h"
 
 class DisplayDriver{
     public: 
-    DisplayDriver(int rpin, int dc, int cs, int busy);
+    DisplayDriver(gpio_num_t rpin, gpio_num_t dc, gpio_num_t cs, gpio_num_t busy);
     void show(ImageDriver _img);
     void sleep();
     void wait_idle();
@@ -11,11 +12,12 @@ class DisplayDriver{
     void sendData(char data);
 
     private:
+    void sendSPI(char data);
     ImageDriver img;
     int width;
     int height;
-    int reset_pin;
-    int dc_pin;
-    int cs_pin;
-    int busy_pin;
+    gpio_num_t reset_pin;
+    gpio_num_t dc_pin;
+    gpio_num_t cs_pin;
+    gpio_num_t busy_pin;
 };

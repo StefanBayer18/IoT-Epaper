@@ -3,6 +3,8 @@
 #include <TestClass.h>
 #include "esp_log.h"
 #include "driver/gpio.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 
 #define TAG "IMAGEDRIVER"
 
@@ -26,11 +28,16 @@ void app_main()
     ImageDriver img = ImageDriver();
     printf("Init Image\n");
     // img.addPoint(12, 0);
-    //img.addLine(0,0,800,480);
+    img.addLine(0,0,800,480);
     printf("Added Line\n");
     TestClass test = TestClass();
     test.prt();
     display.show(img);
+
+    vTaskDelay(pdMS_TO_TICKS(100));
+
+    display.clear(img.act_width * img.height);
+
     display.sleep();
     // img.debug();
     //display.reset();

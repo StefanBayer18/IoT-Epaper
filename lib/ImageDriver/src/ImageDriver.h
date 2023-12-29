@@ -11,7 +11,7 @@ class ImageDriver{
     int width = WIDTH;
     int act_width = WIDTH/8;
     int height = HEIGHT;
-    char img[WIDTH*HEIGHT/8] = {};
+    char* img;
     void addText();
     void addImage();
     void addLine(int x1, int y1, int x2, int y2);

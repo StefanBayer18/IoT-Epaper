@@ -7,7 +7,7 @@
 #define DISPLAYDRIVER
 class DisplayDriver{
     public: 
-    DisplayDriver(gpio_num_t rpin, gpio_num_t dc, gpio_num_t cs, gpio_num_t busy);
+    DisplayDriver(gpio_num_t DIN, gpio_num_t SCLK, gpio_num_t CS, gpio_num_t DC, gpio_num_t RST, gpio_num_t BUSY);
     void show(ImageDriver _img);
     void sleep();
     void waitIdle();
@@ -16,12 +16,11 @@ class DisplayDriver{
     void sendData(char data);
 
     private:
-    ImageDriver img;
-    int width;
-    int height;
-    gpio_num_t reset_pin;
-    gpio_num_t dc_pin;
+    gpio_num_t dout_pin;
+    gpio_num_t sclk;
     gpio_num_t cs_pin;
+    gpio_num_t dc_pin;
+    gpio_num_t reset_pin;
     gpio_num_t busy_pin;
     spi_device_handle_t spi;
     void sendSPI(char data);

@@ -1,9 +1,11 @@
 #include "ImageDriver.h"
 #include "esp_log.h"
+#include <cstdlib>
+
 #define TAG "IMAGEDRIVER"
 
 ImageDriver::ImageDriver(){
-
+    img = (char*) malloc(sizeof(char) * act_width * height);
 }
 
 void ImageDriver::addGraph(int x1, int y1, int x2, int y2){

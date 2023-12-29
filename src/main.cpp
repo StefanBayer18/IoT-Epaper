@@ -6,6 +6,13 @@
 
 #define TAG "IMAGEDRIVER"
 
+#define DOUT GPIO_NUM_13
+#define SCLK GPIO_NUM_14
+#define CS GPIO_NUM_15
+#define DC GPIO_NUM_27
+#define RST GPIO_NUM_26
+#define BUSY GPIO_NUM_25
+
 extern "C"
 {
     void app_main();
@@ -14,17 +21,17 @@ extern "C"
 void app_main()
 {
     printf("Hello World\n");
+    DisplayDriver display = DisplayDriver(DOUT, SCLK, CS, DC, RST, BUSY);
     printf("Init Display\n");
-    //ImageDriver img = ImageDriver();
+    ImageDriver img = ImageDriver();
     printf("Init Image\n");
     // img.addPoint(12, 0);
-    // img.addLine(0,0,800,480);
+    //img.addLine(0,0,800,480);
     printf("Added Line\n");
-    //DisplayDriver display = DisplayDriver(GPIO_NUM_17, GPIO_NUM_16, GPIO_NUM_2, GPIO_NUM_21);
     TestClass test = TestClass();
     test.prt();
-    // display.show(img);
-    // display.sleep();
+    display.show(img);
+    display.sleep();
     // img.debug();
-    // display.show();
+    //display.reset();
 }

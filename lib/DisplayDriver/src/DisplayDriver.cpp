@@ -15,8 +15,6 @@ DisplayDriver::DisplayDriver(gpio_num_t DIN, gpio_num_t SCLK, gpio_num_t CS, gpi
 
     printf("Building DisplayDriver\n");
 
-    reset();
-
     // Configure Pins
     ESP_ERROR_CHECK(gpio_set_direction(RST, GPIO_MODE_OUTPUT));
     ESP_ERROR_CHECK(gpio_set_direction(DC, GPIO_MODE_OUTPUT));
@@ -27,10 +25,38 @@ DisplayDriver::DisplayDriver(gpio_num_t DIN, gpio_num_t SCLK, gpio_num_t CS, gpi
 
     initSPI();
 
+    initDisplay();
+}
+
+unsigned char Voltage_Frame_7IN5_V2[]={
+	0x6, 0x3F, 0x3F, 0x11, 0x24, 0x7, 0x17,
+};
+
+void DisplayDriver::initDisplay(){
+    // BWRmode & LUT from register (Page: 20)
+
+    reset();
+
+    // Booster Soft Start
+    sendCommand(0x06);
+
+    sendData(0x27);
+	sendData(0x27);
+	sendData(0x2F);
+	sendData(0x17);
+
+    // Power Setting (PWR) (R01h)
+    sendCommand(0x01);
+    sendData(0x17);
+    sendData(0x23);
+    sendData(0x3F);
+    sendData(0x3F);
+    sendData(0x11);
+
     sendCommand(0x04); // Turn device on
     //vTaskDelay(pdMS_TO_TICKS(100));
     waitIdle();
-
+    printf("Done Waiting succesfully\n");
 }
 
 /**
@@ -41,7 +67,18 @@ void DisplayDriver::show(ImageDriver img)
     sendCommand(0x13); // Data Start Transmission 2 (DTM2) (R13h)
     for (int x = 0; x < img.act_width * img.height; x++)
     {
-        sendData(~img.img[x]);
+        sendData(img.img[x]);
+    }
+    sendCommand(0x12); // Display Refresh (DRF) (R12h)
+    vTaskDelay(pdMS_TO_TICKS(100));
+    waitIdle();
+}
+
+void DisplayDriver::clear(int pixel){
+    sendCommand(0x13); // Data Start Transmission 2 (DTM2) (R13h)
+    for (int x = 0; x < pixel; x++)
+    {
+        sendData(0);
     }
     sendCommand(0x12); // Display Refresh (DRF) (R12h)
     vTaskDelay(pdMS_TO_TICKS(100));

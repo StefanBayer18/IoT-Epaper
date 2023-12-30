@@ -28,10 +28,6 @@ DisplayDriver::DisplayDriver(gpio_num_t DIN, gpio_num_t SCLK, gpio_num_t CS, gpi
     initDisplay();
 }
 
-unsigned char Voltage_Frame_7IN5_V2[]={
-	0x6, 0x3F, 0x3F, 0x11, 0x24, 0x7, 0x17,
-};
-
 void DisplayDriver::initDisplay(){
     // BWRmode & LUT from register (Page: 20)
 
@@ -60,7 +56,8 @@ void DisplayDriver::initDisplay(){
 }
 
 /**
- *  @brief: Displays given Image on the Display
+ *  Displays given Image on the Display
+ *  @param img Image to display from ImageDriver
  */
 void DisplayDriver::show(ImageDriver img)
 {
@@ -74,9 +71,13 @@ void DisplayDriver::show(ImageDriver img)
     waitIdle();
 }
 
-void DisplayDriver::clear(int pixel){
+/**
+ *  Clears Display Image
+ *  @param bytes Amount of Bytes of Display
+ */
+void DisplayDriver::clear(int bytes){
     sendCommand(0x13); // Data Start Transmission 2 (DTM2) (R13h)
-    for (int x = 0; x < pixel; x++)
+    for (int x = 0; x < bytes; x++)
     {
         sendData(0);
     }
@@ -86,7 +87,7 @@ void DisplayDriver::clear(int pixel){
 }
 
 /**
- *  @brief: Sends Data to the Display
+ *  Sends Data to the Display
  */
 void DisplayDriver::sendData(char data)
 {
@@ -95,7 +96,7 @@ void DisplayDriver::sendData(char data)
 }
 
 /**
- *  @brief: Sends an Command to the Display
+ *  Sends an Command to the Display
  */
 void DisplayDriver::sendCommand(char cmd)
 {
@@ -103,6 +104,9 @@ void DisplayDriver::sendCommand(char cmd)
     sendSPI(cmd);
 }
 
+/**
+ *  Resets Display Configuration
+ */
 void DisplayDriver::reset()
 {
     gpio_set_level(reset_pin, 1);
@@ -113,6 +117,9 @@ void DisplayDriver::reset()
     vTaskDelay(pdMS_TO_TICKS(20));
 }
 
+/**
+ *  Wait for Display to finish Interaction
+ */
 void DisplayDriver::waitIdle()
 {
     vTaskDelay(pdMS_TO_TICKS(20));
@@ -127,6 +134,9 @@ void DisplayDriver::waitIdle()
     printf("\n");
 }
 
+/**
+ *  Puts Display into Deep Sleep mode
+ */
 void DisplayDriver::sleep()
 {
     sendCommand(0X02); // Power OFF (POF) (R02h)
@@ -135,6 +145,9 @@ void DisplayDriver::sleep()
     sendData(0xA5);    // check code = 0xA5
 }
 
+/**
+ *  Initialize SPI connection
+ */
 void DisplayDriver::initSPI()
 {
     spi_bus_config_t buscfg = {
@@ -161,18 +174,16 @@ void DisplayDriver::initSPI()
     ESP_ERROR_CHECK(spi_bus_add_device(HSPI_HOST, &dev_config, &spi));
 }
 
-// TODO
+/**
+ *  Sends Data to Display via SPI
+ */
 void DisplayDriver::sendSPI(char data)
 {
     spi_transaction_t t = {
         .length = 8,
         .tx_buffer = &data
     };
-    ESP_ERROR_CHECK(gpio_set_level(cs_pin, 0));
 
-    //ESP_ERROR_CHECK(spi_device_transmit(spi, &t));
     ESP_ERROR_CHECK(spi_device_polling_transmit(spi, &t));
-    //ESP_ERROR_CHECK(spi_device_queue_trans(spi, &t, 100));
     
-    ESP_ERROR_CHECK(gpio_set_level(cs_pin, 1));
 }

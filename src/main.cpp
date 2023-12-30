@@ -1,6 +1,5 @@
 #include <DisplayDriver.h>
 #include <ImageDriver.h>
-#include <TestClass.h>
 #include "esp_log.h"
 #include "driver/gpio.h"
 #include "freertos/FreeRTOS.h"
@@ -28,15 +27,14 @@ void app_main()
     ImageDriver img = ImageDriver();
     printf("Init Image\n");
     // img.addPoint(12, 0);
-    img.addLine(0,0,800,480);
-    printf("Added Line\n");
-    TestClass test = TestClass();
-    test.prt();
+    //img.addLine(0,0,800,480);
+    img.addFilledRect(11, 0, 200, 400);
+    printf("Added square\n");
     display.show(img);
 
     vTaskDelay(pdMS_TO_TICKS(100));
 
-    display.clear(img.act_width * img.height);
+    display.clear(img.imgSize);
 
     display.sleep();
     // img.debug();

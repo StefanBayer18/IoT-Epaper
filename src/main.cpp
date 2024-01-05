@@ -1,19 +1,14 @@
 #include <DisplayDriver.h>
 #include <ImageDriver.h>
 #include <GraphData.h>
+#include "config.h"
+
 #include "esp_log.h"
 #include "driver/gpio.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
 #define TAG "IMAGEDRIVER"
-
-#define DOUT GPIO_NUM_13
-#define SCLK GPIO_NUM_14
-#define CS GPIO_NUM_15
-#define DC GPIO_NUM_27
-#define RST GPIO_NUM_26
-#define BUSY GPIO_NUM_25
 
 extern "C" {
 void app_main();
@@ -23,9 +18,9 @@ void app_main() {
     printf("Hello World\n");
     DisplayDriver display{DOUT, SCLK, CS, DC, RST, BUSY};
     printf("Init Display\n");
-    const ImageDriver img;
+    const ImageDriver img{IMGWIDTH, IMGHEIGTH};
     printf("Init Image\n");
-    const GraphData graph{500};
+    const GraphData graph{GRAPHWIDTH};
     (void)graph;
     printf("Init Graph\n");
     // img.addPoint(12, 0);

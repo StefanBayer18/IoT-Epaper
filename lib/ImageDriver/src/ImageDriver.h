@@ -2,18 +2,16 @@
 
 #define IMAGEDRIVER
 
-#define WIDTH 800
-#define HEIGHT 480
 #include <sys/_stdint.h>
 
 class ImageDriver {
 public:
-    ImageDriver();
+    ImageDriver(int _width, int _height);
     ~ImageDriver();
     ImageDriver(const ImageDriver&) = delete;
-    int width = WIDTH;
-    int act_width = WIDTH / 8;
-    int height = HEIGHT;
+    int width;
+    int act_width;
+    int height;
     int imgSize;
     uint8_t* img;
     void addText();

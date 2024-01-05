@@ -5,8 +5,12 @@
 
 #define TAG "IMAGEDRIVER"
 
-ImageDriver::ImageDriver()
-    : imgSize(act_width * height), img(new uint8_t[imgSize]()) {
+ImageDriver::ImageDriver(int _width, int _height){
+        width = _width;
+        height = _height;
+        act_width = width/8;
+        imgSize = act_width * height;
+        img = new uint8_t[imgSize]();
 }
 
 ImageDriver::~ImageDriver() {

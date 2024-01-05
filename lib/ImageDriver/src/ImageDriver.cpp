@@ -109,6 +109,14 @@ void ImageDriver::addLayoutLines() const{
     addFilledRect(198, height - 202, width-198, 4); 
 }
 
+void ImageDriver::addBorderLines() const{
+    addFilledRect(0, 0, 2, height);
+    addFilledRect(width - 2, 0, 2, height);
+
+    addFilledRect(0, 0, width, 2);
+    addFilledRect(0, height - 2, width, 2);
+}
+
 void ImageDriver::addText() {
     // TODO: Implement
 }

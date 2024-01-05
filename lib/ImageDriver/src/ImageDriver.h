@@ -22,6 +22,7 @@ public:
                           int height) const;
     void addFilledRect(int x, int y, int width, int height) const;
     void addLayoutLines() const;
+    void addBorderLines() const;
     void addGraph(int x1, int y1, int x2, int y2);
     //void debug();
 

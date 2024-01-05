@@ -27,6 +27,7 @@ void app_main() {
     // img.addLine(0,0,800,480);
     //img.addFilledRect(11, 0, 200, 400);
     img.addLayoutLines();
+    img.addBorderLines();
     printf("Added Rect\n");
     display.show(img);
 

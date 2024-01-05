@@ -25,7 +25,7 @@
 #define DATABASETABLE "OUTSIDE"
 
 // API
-#define APIQUERY "http://api.weatherapi.com/v1/current.json?key=
+#define APIQUERY "http://api.weatherapi.com/v1/current.json?key="
 #define APIKEY "EMPTY"
 #define APIPARAM "&q=Bad Hersfeld&aqi=no"
 

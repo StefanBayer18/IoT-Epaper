@@ -77,7 +77,7 @@ void ImageDriver::addFilledRect(int x, int y, int width, int height) const {
     if (x >= this->width || y >= this->height) {
         return;
     }
-    width = std::min(act_width - x, width);
+    width = std::min(this->width - x, width);
     height = std::min(this->height - y, height);
 
     int pos = cords2index(x, y);
@@ -98,6 +98,15 @@ void ImageDriver::addFilledRect(int x, int y, int width, int height) const {
 void ImageDriver::addPoint(int x, int y) const {
     const int coord = cords2index(x, y);
     img[coord] = img[coord] | (1 << (7 - (x % 8)));
+}
+
+void ImageDriver::addLayoutLines() const{
+    //Horizontal Lines
+    addFilledRect(198, 0, 4, height);
+    addFilledRect(398, 0, 4, height - 198);
+    addFilledRect(598, 0, 4, height - 198);
+
+    addFilledRect(198, height - 202, width-198, 4); 
 }
 
 void ImageDriver::addText() {

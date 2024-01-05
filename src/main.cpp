@@ -1,5 +1,6 @@
 #include <DisplayDriver.h>
 #include <ImageDriver.h>
+#include <GraphData.h>
 #include "esp_log.h"
 #include "driver/gpio.h"
 #include "freertos/FreeRTOS.h"
@@ -26,10 +27,12 @@ void app_main()
     printf("Init Display\n");
     ImageDriver img = ImageDriver();
     printf("Init Image\n");
+    GraphData grap = GraphData(500);
+    printf("Init Graph\n");
     // img.addPoint(12, 0);
     //img.addLine(0,0,800,480);
     img.addFilledRect(11, 0, 200, 400);
-    printf("Added square\n");
+    printf("Added Rect\n");
     display.show(img);
 
     vTaskDelay(pdMS_TO_TICKS(100));
@@ -38,5 +41,4 @@ void app_main()
 
     display.sleep();
     // img.debug();
-    //display.reset();
 }

@@ -25,7 +25,8 @@ void app_main() {
     printf("Init Graph\n");
     // img.addPoint(12, 0);
     // img.addLine(0,0,800,480);
-    img.addFilledRect(11, 0, 200, 400);
+    //img.addFilledRect(11, 0, 200, 400);
+    img.addLayoutLines();
     printf("Added Rect\n");
     display.show(img);
 

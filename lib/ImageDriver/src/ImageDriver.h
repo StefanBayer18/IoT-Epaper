@@ -21,6 +21,7 @@ public:
     void drawVerticalLine(int pos, int leftOffset, int rightOffset,
                           int height) const;
     void addFilledRect(int x, int y, int width, int height) const;
+    void addLayoutLines() const;
     void addGraph(int x1, int y1, int x2, int y2);
     //void debug();
 

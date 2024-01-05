@@ -1,17 +1,19 @@
 # IoT-Epaper
+
 Beispielcode https://github.com/waveshareteam/e-Paper/tree/master/Arduino/epd7in5b_V2
 
 Grober Plan
 
 main
+
 - Klassen initalisieren
 - connect to wifi()
 - Daten auslesen
 - EPaper aktualisieren
 - putEspToSleep 15 min
 
-
 DisplayDriver
+
 - Display Image()
 - Sleep() -> IMMER nach image update
 - waitBusy()
@@ -20,6 +22,7 @@ DisplayDriver
 - sendData()
 
 ImageDriver
+
 - imageArray
 - addtext()
 - addImage()
@@ -28,6 +31,7 @@ ImageDriver
 - addGraph() -- graph unten Rechts für Temperatur im Zeitverlauf
 
 DatenGetter
+
 - Datenbank verbinden()
 - Datenbank auslesen()
 - Api auslesen()

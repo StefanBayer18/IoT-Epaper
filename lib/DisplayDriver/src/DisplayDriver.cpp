@@ -4,8 +4,9 @@
 #include "driver/gpio.h"
 #include <driver/spi_master.h>
 
-DisplayDriver::DisplayDriver(gpio_num_t DIN, gpio_num_t SCLK, gpio_num_t CS, gpio_num_t DC, gpio_num_t RST, gpio_num_t BUSY)
-{
+DisplayDriver::DisplayDriver(const gpio_num_t DIN, const gpio_num_t SCLK,
+                             const gpio_num_t CS, const gpio_num_t DC,
+                             const gpio_num_t RST, const gpio_num_t BUSY) {
     dout_pin = DIN;
     sclk = SCLK;
     cs_pin = CS;
@@ -28,7 +29,7 @@ DisplayDriver::DisplayDriver(gpio_num_t DIN, gpio_num_t SCLK, gpio_num_t CS, gpi
     initDisplay();
 }
 
-void DisplayDriver::initDisplay(){
+void DisplayDriver::initDisplay() const {
     // BWRmode & LUT from register (Page: 20)
 
     reset();
@@ -37,9 +38,9 @@ void DisplayDriver::initDisplay(){
     sendCommand(0x06);
 
     sendData(0x27);
-	sendData(0x27);
-	sendData(0x2F);
-	sendData(0x17);
+    sendData(0x27);
+    sendData(0x2F);
+    sendData(0x17);
 
     // Power Setting (PWR) (R01h)
     sendCommand(0x01);
@@ -59,11 +60,9 @@ void DisplayDriver::initDisplay(){
  *  Displays given Image on the Display
  *  @param img Image to display from ImageDriver
  */
-void DisplayDriver::show(ImageDriver img)
-{
+void DisplayDriver::show(const ImageDriver& img) const {
     sendCommand(0x13); // Data Start Transmission 2 (DTM2) (R13h)
-    for (int x = 0; x < img.act_width * img.height; x++)
-    {
+    for (int x = 0; x < img.act_width * img.height; x++) {
         sendData(img.img[x]);
     }
     sendCommand(0x12); // Display Refresh (DRF) (R12h)
@@ -75,10 +74,9 @@ void DisplayDriver::show(ImageDriver img)
  *  Clears Display Image
  *  @param bytes Amount of Bytes of Display
  */
-void DisplayDriver::clear(int bytes){
+void DisplayDriver::clear(int bytes) const {
     sendCommand(0x13); // Data Start Transmission 2 (DTM2) (R13h)
-    for (int x = 0; x < bytes; x++)
-    {
+    for (int x = 0; x < bytes; x++) {
         sendData(0);
     }
     sendCommand(0x12); // Display Refresh (DRF) (R12h)
@@ -89,8 +87,7 @@ void DisplayDriver::clear(int bytes){
 /**
  *  Sends Data to the Display
  */
-void DisplayDriver::sendData(char data)
-{
+void DisplayDriver::sendData(uint8_t data) const {
     ESP_ERROR_CHECK(gpio_set_level(dc_pin, 1));
     sendSPI(data);
 }
@@ -98,8 +95,7 @@ void DisplayDriver::sendData(char data)
 /**
  *  Sends an Command to the Display
  */
-void DisplayDriver::sendCommand(char cmd)
-{
+void DisplayDriver::sendCommand(char cmd) const {
     ESP_ERROR_CHECK(gpio_set_level(dc_pin, 0));
     sendSPI(cmd);
 }
@@ -107,8 +103,7 @@ void DisplayDriver::sendCommand(char cmd)
 /**
  *  Resets Display Configuration
  */
-void DisplayDriver::reset()
-{
+void DisplayDriver::reset() const {
     gpio_set_level(reset_pin, 1);
     vTaskDelay(pdMS_TO_TICKS(20));
     gpio_set_level(reset_pin, 0);
@@ -120,12 +115,10 @@ void DisplayDriver::reset()
 /**
  *  Wait for Display to finish Interaction
  */
-void DisplayDriver::waitIdle()
-{
+void DisplayDriver::waitIdle() const {
     vTaskDelay(pdMS_TO_TICKS(20));
-    char idle = 0;
-    while (idle == 0)
-    {
+    int idle = 0;
+    while (idle == 0) {
         printf(".");
         sendCommand(0x71); // Get Status (FLG) (R71h)
         idle = gpio_get_level(busy_pin);
@@ -137,8 +130,7 @@ void DisplayDriver::waitIdle()
 /**
  *  Puts Display into Deep Sleep mode
  */
-void DisplayDriver::sleep()
-{
+void DisplayDriver::sleep() const {
     sendCommand(0X02); // Power OFF (POF) (R02h)
     waitIdle();
     sendCommand(0X07); // Deep Sleep (DSLP) (R07h)
@@ -148,28 +140,25 @@ void DisplayDriver::sleep()
 /**
  *  Initialize SPI connection
  */
-void DisplayDriver::initSPI()
-{
-    spi_bus_config_t buscfg = {
-        .mosi_io_num = dout_pin,
-        .miso_io_num = GPIO_NUM_12, // not used
-        .sclk_io_num = sclk,
-        .quadwp_io_num = -1,
-        .quadhd_io_num = -1,
-        .max_transfer_sz = 0
-    };
+void DisplayDriver::initSPI() {
+    spi_bus_config_t buscfg{};
+    buscfg.mosi_io_num = dout_pin;
+    buscfg.miso_io_num = GPIO_NUM_12; // not used
+    buscfg.sclk_io_num = sclk;
+    buscfg.quadwp_io_num = -1;
+    buscfg.quadhd_io_num = -1;
+    buscfg.max_transfer_sz = 0;
 
     ESP_ERROR_CHECK(spi_bus_initialize(HSPI_HOST, &buscfg, 0));
 
-    spi_device_interface_config_t dev_config = {
-        .command_bits = 0,
-        .address_bits = 0,
-        .mode = 0,                   // SPI mode (0, 1, 2, or 3)
-        .clock_speed_hz = 1000000,  // Clock frequency
-        .spics_io_num = cs_pin,  // Chip select pin
-        .flags = 0,
-        .queue_size = 1,
-    };
+    spi_device_interface_config_t dev_config{};
+    dev_config.command_bits = 0;
+    dev_config.address_bits = 0;
+    dev_config.mode = 0;                 // SPI mode (0, 1, 2, or 3)
+    dev_config.clock_speed_hz = 1000000; // Clock frequency
+    dev_config.spics_io_num = cs_pin;    // Chip select pin
+    dev_config.flags = 0;
+    dev_config.queue_size = 1;
 
     ESP_ERROR_CHECK(spi_bus_add_device(HSPI_HOST, &dev_config, &spi));
 }
@@ -177,13 +166,10 @@ void DisplayDriver::initSPI()
 /**
  *  Sends Data to Display via SPI
  */
-void DisplayDriver::sendSPI(char data)
-{
-    spi_transaction_t t = {
-        .length = 8,
-        .tx_buffer = &data
-    };
+void DisplayDriver::sendSPI(const uint8_t data) const {
+    spi_transaction_t t{};
+    t.length = 8;
+    t.tx_buffer = &data;
 
     ESP_ERROR_CHECK(spi_device_polling_transmit(spi, &t));
-    
 }

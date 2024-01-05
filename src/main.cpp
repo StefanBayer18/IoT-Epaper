@@ -15,22 +15,21 @@
 #define RST GPIO_NUM_26
 #define BUSY GPIO_NUM_25
 
-extern "C"
-{
-    void app_main();
+extern "C" {
+void app_main();
 }
 
-void app_main()
-{
+void app_main() {
     printf("Hello World\n");
-    DisplayDriver display = DisplayDriver(DOUT, SCLK, CS, DC, RST, BUSY);
+    DisplayDriver display{DOUT, SCLK, CS, DC, RST, BUSY};
     printf("Init Display\n");
-    ImageDriver img = ImageDriver();
+    const ImageDriver img;
     printf("Init Image\n");
-    GraphData grap = GraphData(500);
+    const GraphData graph{500};
+    (void)graph;
     printf("Init Graph\n");
     // img.addPoint(12, 0);
-    //img.addLine(0,0,800,480);
+    // img.addLine(0,0,800,480);
     img.addFilledRect(11, 0, 200, 400);
     printf("Added Rect\n");
     display.show(img);

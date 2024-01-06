@@ -15,7 +15,7 @@
  *----------------*/
 
 /*Store the image of the glyphs*/
-static const uint8_t glyph_bitmap[] = {
+static const uint8_t glyphBitmap[] = {
     /* U+0025 "%" */
     0xe0, 0xf8, 0x40, 0x0, 0x18, 0x18, 0x0, 0x2,
     0x1c, 0x7, 0xc1, 0xc0,
@@ -76,7 +76,7 @@ typedef struct GlyphDescription {
     int8_t ofs_x;
     int8_t ofs_y;
 } GlyphDescription;
-static const GlyphDescription glyph_dsc[] = {
+static const GlyphDescription glyphDsc[] = {
     {.bitmap_index = 0, .adv_w = 0, .box_w = 0, .box_h = 0, .ofs_x = 0,
      .ofs_y = 0} /* id = 0 reserved */,
     {.bitmap_index = 0, .adv_w = 212, .box_w = 10, .box_h = 9, .ofs_x = 2,
@@ -109,16 +109,16 @@ static const GlyphDescription glyph_dsc[] = {
  *  CHARACTER MAPPING
  *--------------------*/
 
-static const uint16_t unicode_list_0[] = {
+static const uint16_t unicodeList0[] = {
     0x0, 0xb, 0xc, 0xd, 0xe, 0xf, 0x10, 0x11,
     0x12, 0x13, 0x14, 0x8b
 };
 
 typedef struct Font {
-    const uint8_t line_height;
-    const uint8_t* glyph_bitmap;
-    const uint16_t* character_mapping;
-    const GlyphDescription* glyph_dsc;
+    const uint8_t lineHeight;
+    const uint8_t* glyphBitmap;
+    const uint16_t* characterMapping;
+    const GlyphDescription* glyphDsc;
 } Font;
 /*-----------------
  *  PUBLIC FONT
@@ -126,9 +126,9 @@ typedef struct Font {
 
 /*Initialize a public general font descriptor*/
 const Font font = {
-    .line_height = 13, /*The maximum line height required by the font*/
-    .glyph_bitmap = glyph_bitmap, /*Bitmap of glyphs*/
-    .character_mapping = unicode_list_0, /*Index of each character*/
-    .glyph_dsc = glyph_dsc, /*Description of each glyph*/
+    .lineHeight = 13, /*The maximum line height required by the font*/
+    .glyphBitmap = glyphBitmap, /*Bitmap of glyphs*/
+    .characterMapping = unicodeList0, /*Index of each character*/
+    .glyphDsc = glyphDsc, /*Description of each glyph*/
 };
 #endif

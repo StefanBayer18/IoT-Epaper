@@ -6,14 +6,14 @@
 
 struct GlyphDescription {
     /** Glyph width in pixels */
-    uint16_t w_px;
+    uint8_t w_px;
     /** Index of the glyph in the bitmap */
     uint16_t glyph_index;
 };
 
 struct Font {
     /** List of unicode characters */
-    std::span<const uint16_t> unicode_list;
+    std::span<const uint8_t> unicode_list;
     /** Description of glyphs */
     std::span<const GlyphDescription> glyph_dsc;
     /** Bitmap of glyphs */

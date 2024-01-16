@@ -131,7 +131,7 @@ void ImageDriver::drawText(Vec2u coord, std::string_view text) {
         // TODO: See if this actually works
         auto glyph = reinterpret_cast<const Image::Element *>(
             &font.glyph_bitmap[dsc.glyph_index]);
-        const std::span glyphSpan{glyph, dsc.w_px * font.h_px};
+        const std::span glyphSpan{glyph, static_cast<size_t>(dsc.w_px * font.h_px)};
         drawImage(coord, Image(glyphSpan, (size_t)dsc.w_px));
         coord.x += dsc.w_px;
     }

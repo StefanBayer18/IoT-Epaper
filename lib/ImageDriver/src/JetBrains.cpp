@@ -245,7 +245,7 @@ static const GlyphDescription jetbrains_glyph_dsc[] = {
 };
 
 /* List of unicode characters */
-static const uint32_t jetbrains_unicode_list[] = {
+static const uint8_t jetbrains_unicode_list[] = {
     37,  /* Unicode: U+0025 (%) */
     48,  /* Unicode: U+0030 (0) */
     49,  /* Unicode: U+0031 (1) */

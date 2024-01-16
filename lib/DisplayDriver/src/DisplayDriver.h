@@ -11,7 +11,7 @@ public:
                   gpio_num_t RST, gpio_num_t BUSY);
     void show(const ImageDriver& img) const;
     void sleep() const;
-    void clear(int pixel) const;
+    void clear(size_t pixel) const;
     void waitIdle() const;
     void sendCommand(char cmd) const;
     void sendData(uint8_t data) const;

@@ -54,6 +54,7 @@ public:
      * @param size Size of the square.
      */
     void drawFilledRect(Vec2u pos, Vec2u size);
+    
 
     void drawGraph(Vec2u min, Vec2u end, std::span<const Vec2f> points);
 
@@ -66,17 +67,11 @@ public:
     }
 
     [[nodiscard]] constexpr size_t size() const {
-        return mImgSize * sizeof(Element);
+        return mImgSize;
     }
 
-    /**
-     * Get byte at index
-     * \param index Byte index
-     */
     [[nodiscard]] constexpr uint8_t operator [](size_t index) const {
-        // Transform index to internal index and return correcr byte
-        constexpr uint8_t mask = 0xFF;
-        return mImg[index / elementSize] >> (elementSize - 1 - index % elementSize) & mask;
+        return mImg[index];
     }
 
     constexpr static uint8_t elementSize = sizeof(Element) * CHAR_BIT;
@@ -98,6 +93,8 @@ private:
                                      coord.x % elementSize));
         return {index, mask};
     }
+
+    void drawVerticalLine(Vec2u, Element, size_t);
 
     size_t mWidth;
     size_t mInternalWidth;

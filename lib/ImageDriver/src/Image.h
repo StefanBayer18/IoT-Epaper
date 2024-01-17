@@ -13,18 +13,18 @@ public:
     }
 
     [[nodiscard]] constexpr size_t width() const {
-        return mWidth / (sizeof(Element) * CHAR_BIT);
+        return mWidth;
     }
     [[nodiscard]] constexpr size_t height() const {
-        return mHeight / (sizeof(Element) * CHAR_BIT);
+        return mHeight;
     }
 
     [[nodiscard]] constexpr size_t internalWidth() const {
-        return mWidth;
+        return mWidth  / (sizeof(Element) * CHAR_BIT);
     }
 
     [[nodiscard]] constexpr size_t internalHeight() const {
-        return mHeight;
+        return mHeight  / (sizeof(Element) * CHAR_BIT);
     }
 
     [[nodiscard]] constexpr size_t internalSize() const {

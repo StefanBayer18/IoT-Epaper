@@ -11,7 +11,7 @@
 #define TAG "IMAGEDRIVER"
 
 void drawLayoutLines(ImageDriver& driver) {
-    // Horizontal Lines
+    // Vertikal Lines
     driver.drawFilledRect({198, 0}, {4, driver.height()});
     driver.drawFilledRect({398, 0}, {4, driver.height() - 198});
     driver.drawFilledRect({598, 0}, {4, driver.height() - 198});
@@ -21,11 +21,13 @@ void drawLayoutLines(ImageDriver& driver) {
 }
 
 void drawBorderLines(ImageDriver& driver) {
-    driver.drawFilledRect({0, 0}, {2, driver.height()});
-    driver.drawFilledRect({driver.width() - 2, 0}, {2, driver.height()});
+    //Horizontal
+    driver.drawFilledRect({0, 0}, {4, driver.height()});
+    driver.drawFilledRect({driver.width() - 4, 0}, {4, driver.height()});
 
-    driver.drawFilledRect({0, 0}, {driver.width(), 2});
-    driver.drawFilledRect({0, driver.height() - 2}, {driver.width(), 2});
+    //Vertikal
+    driver.drawFilledRect({0, 0}, {driver.width(), 4});
+    driver.drawFilledRect({0, driver.height() - 4}, {driver.width(), 4});
 }
 
 extern "C" void app_main() {
@@ -40,13 +42,18 @@ extern "C" void app_main() {
     // img.addPoint(12, 0);
     // img.addLine(0,0,800,480);
     // img.addFilledRect(11, 0, 200, 400);
-    drawLayoutLines(img);
-    drawBorderLines(img);
-    img.drawText({32, 32}, "10°");
-    printf("Added Rect\n");
+    //drawLayoutLines(img);
+    //drawBorderLines(img);
+    //img.drawFilledRect({80, 0}, {7, img.height()});
+    //img.drawFilledRect({0, 0}, {4, img.height()});
+    //img.drawFilledRect({0,0},{7,10});
+    const uint8_t data[] = {0xff, 0x55, 0xff, 0x55, 0xff, 0x55, 0xff, 0x55};
+    img.drawImage({0,0}, {data, 8});
+    //img.drawText({32, 32}, "10°");
+    //printf("Added Rect\n");
     display.show(img);
 
-    vTaskDelay(pdMS_TO_TICKS(100));
+    vTaskDelay(pdMS_TO_TICKS(5000));
 
     display.clear(img.size());
 

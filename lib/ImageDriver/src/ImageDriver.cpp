@@ -1,12 +1,13 @@
-#include "esp_log.h"
+#include "./ImageDriver.h"
+
 #include <algorithm>
-#include <cstdlib>
 #include <cstdio>
+#include <cstdlib>
 #include <string_view>
 
-#include "./ImageDriver.h"
 #include "./Font.h"
 #include "./JetBrains.h"
+#include "esp_log.h"
 
 #define TAG "IMAGEDRIVER"
 
@@ -23,22 +24,35 @@ void ImageDriver::drawGraph(Vec2u min, Vec2u end,
 }
 
 void ImageDriver::drawImage(Vec2u coord, const Image &image) {
-    size_t endX = std::min(coord.x + image.internalWidth(), mWidth);
-    size_t endY = std::min(coord.y + image.internalHeight(), mHeight);
+    size_t endX = std::min(coord.x + image.width(), mWidth);
+    size_t endY = std::min(coord.y + image.height(), mHeight);
+    auto shift = coord.x % elementSize;
+    for (size_t sourceY = 0; sourceY < image.height(); ++sourceY) {
+        for (size_t sourceX = 0; sourceX < image.byteWidth(); ++sourceX) {
+            auto pos = coord + Vec2u{sourceX, sourceY};
+            auto data = image.data()[sourceY * image.byteWidth() + sourceX];
+            auto index = cords2index(pos).first;
+            mImg[index] |= data >> shift;
+            if (pos.x + elementSize < endX) {
+                mImg[index + 1] |= data << (elementSize - shift);
+            }
+        }
+    }
+
     // Pre-calculate shift amount for the elements from the image
     uint8_t shift = coord.x % elementSize;
     for (size_t y = coord.y; y < endY; ++y) {
         size_t sourceY = y - coord.y;
         size_t destIndex = y * mInternalWidth + coord.x / elementSize;
-        size_t sourceIndex = sourceY * image.internalWidth();
+        size_t sourceIndex = sourceY * image.byteWidth();
         for (size_t x = coord.x; x < endX; x += elementSize) {
             Element imgElement = image.data()[sourceIndex];
             // Shift element if necessary
             if (shift != 0 && x + elementSize < endX) {
                 imgElement >>= shift;
                 // merge with next element
-                imgElement |=
-                    image.data()[sourceIndex + 1] << (elementSize - shift);
+                imgElement |= image.data()[sourceIndex + 1]
+                              << (elementSize - shift);
             }
             mImg[destIndex++] |= imgElement;
             sourceIndex++;
@@ -62,9 +76,8 @@ void ImageDriver::drawLine(Vec2u from, Vec2u to) {
     }
 }
 
-void ImageDriver::drawVerticalLine(Vec2u pos, Element mask, size_t height){
-    for (size_t i = 0; i < height; i++)
-    {
+void ImageDriver::drawVerticalLine(Vec2u pos, Element mask, size_t height) {
+    for (size_t i = 0; i < height; i++) {
         mImg[cords2index({pos.x, pos.y + i}).first] |= mask;
     }
 }
@@ -77,14 +90,14 @@ void ImageDriver::drawFilledRect(Vec2u pos, Vec2u size) {
     unsigned height = std::min(mHeight - pos.y, size.y);
 
     unsigned leftOffset = pos.x % elementSize;
-    unsigned rightOffset =  elementSize - ((pos.x + width) % elementSize);
+    unsigned rightOffset = elementSize - ((pos.x + width) % elementSize);
 
     Element startMask = 0xffu >> leftOffset;
     Element endMask = 0xffu << rightOffset;
 
-    if(pos.x / elementSize == (pos.x + size.x) / elementSize){
+    if (pos.x / elementSize == (pos.x + size.x) / elementSize) {
         // Alles in einem Byte
-        drawVerticalLine(pos, startMask&endMask, height);
+        drawVerticalLine(pos, startMask & endMask, height);
         return;
     }
     drawVerticalLine(pos, startMask, height);
@@ -99,7 +112,6 @@ void ImageDriver::drawFilledRect(Vec2u pos, Vec2u size) {
     drawVerticalLine(pos, endMask, height);
 }
 
-
 void ImageDriver::drawPoint(Vec2u coord) {
     if (const auto [index, mask] = cords2index(coord); index != SIZE_MAX) {
         mImg[index] |= (static_cast<Element>(1)
@@ -113,14 +125,16 @@ void ImageDriver::drawText(Vec2u coord, std::string_view text) {
         const auto it =
             std::find(font.unicode_list.begin(), font.unicode_list.end(), ch);
         if (it == font.unicode_list.end()) {
-            //std::cerr << "Character" <<  ch << "not found in font" << std::endl;
+            // std::cerr << "Character" <<  ch << "not found in font" <<
+            // std::endl;
             continue;
         }
         const auto index = *it;
         const auto &dsc = font.glyph_dsc[index];
         // TODO: See if this actually works
         auto glyph = &font.glyph_bitmap[dsc.glyph_index];
-        const std::span glyphSpan{glyph, static_cast<size_t>(dsc.w_px * font.h_px)};
+        const std::span glyphSpan{glyph,
+                                  static_cast<size_t>(dsc.w_px * font.h_px)};
         drawImage(coord, Image(glyphSpan, dsc.w_px));
         coord.x += dsc.w_px;
     }

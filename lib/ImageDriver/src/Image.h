@@ -19,19 +19,18 @@ public:
         return mHeight;
     }
 
-    [[nodiscard]] constexpr size_t internalWidth() const {
+    [[nodiscard]] constexpr size_t byteWidth() const {
         return mWidth  / (sizeof(Element) * CHAR_BIT);
     }
 
-    [[nodiscard]] constexpr size_t internalHeight() const {
-        return mHeight  / (sizeof(Element) * CHAR_BIT);
-    }
-
-    [[nodiscard]] constexpr size_t internalSize() const {
+    [[nodiscard]] constexpr size_t byteSize() const {
         return mData.size();
     }
 
     [[nodiscard]] constexpr size_t size() const {
+        return width() * height();
+    }
+    [[nodiscard]] constexpr size_t byteSize() const {
         return width() * height();
     }
 

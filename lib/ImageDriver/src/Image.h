@@ -23,7 +23,7 @@ public:
         return mWidth  / (sizeof(Element) * CHAR_BIT);
     }
 
-    [[nodiscard]] constexpr size_t byteSize() const {
+    [[nodiscard]] constexpr size_t internalSize() const {
         return mData.size();
     }
 
@@ -31,7 +31,7 @@ public:
         return width() * height();
     }
     [[nodiscard]] constexpr size_t byteSize() const {
-        return width() * height();
+        return byteWidth() * height();
     }
 
     [[nodiscard]] static constexpr size_t elementSize() {

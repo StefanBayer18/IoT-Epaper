@@ -38,7 +38,7 @@ void ImageDriver::drawImage(Vec2u coord, const Image &image) {
             }
         }
     }
-
+    /*
     // Pre-calculate shift amount for the elements from the image
     uint8_t shift = coord.x % elementSize;
     for (size_t y = coord.y; y < endY; ++y) {
@@ -58,6 +58,7 @@ void ImageDriver::drawImage(Vec2u coord, const Image &image) {
             sourceIndex++;
         }
     }
+    */
 }
 
 void ImageDriver::drawLine(Vec2u from, Vec2u to) {

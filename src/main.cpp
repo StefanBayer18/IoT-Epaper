@@ -48,8 +48,8 @@ extern "C" void app_main() {
     //img.drawFilledRect({0, 0}, {4, img.height()});
     //img.drawFilledRect({0,0},{7,10});
     const uint8_t data[] = {0xff, 0x55, 0xff, 0x55, 0xff, 0x55, 0xff, 0x55};
-    img.drawImage({0,0}, {data, 8});
-    //img.drawText({32, 32}, "10°");
+    //img.drawImage({0,0}, {data, 8});
+    img.drawText({32, 32}, "10°");
     //printf("Added Rect\n");
     display.show(img);
 

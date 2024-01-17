@@ -12,7 +12,7 @@
 class ImageDriver {
 public:
     /// Internal element type of the image
-    using Element = unsigned;
+    using Element = uint8_t;
 
     ImageDriver(size_t width, size_t height);
 
@@ -66,11 +66,17 @@ public:
     }
 
     [[nodiscard]] constexpr size_t size() const {
-        return mImgSize;
+        return mImgSize * sizeof(Element);
     }
 
-    [[nodiscard]] constexpr Element operator [](size_t index) const {
-        return mImg[index];
+    /**
+     * Get byte at index
+     * \param index Byte index
+     */
+    [[nodiscard]] constexpr uint8_t operator [](size_t index) const {
+        // Transform index to internal index and return correcr byte
+        constexpr uint8_t mask = 0xFF;
+        return mImg[index / elementSize] >> (elementSize - 1 - index % elementSize) & mask;
     }
 
     constexpr static uint8_t elementSize = sizeof(Element) * CHAR_BIT;

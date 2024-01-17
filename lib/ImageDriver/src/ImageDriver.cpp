@@ -1,13 +1,11 @@
-#include "./ImageDriver.h"
-
-#include <Font.h>
-
 #include <algorithm>
 #include <cstdlib>
 #include <string_view>
+#include <iostream>
 
+#include "./ImageDriver.h"
+#include "./Font.h"
 #include "./JetBrains.h"
-#include "esp_log.h"
 
 #define TAG "IMAGEDRIVER"
 
@@ -28,7 +26,6 @@ void ImageDriver::drawImage(Vec2u coord, const Image &image) {
     size_t endY = std::min(coord.y + image.internalHeight(), mHeight);
     // Pre-calculate shift amount for the elements from the image
     uint8_t shift = coord.x % elementSize;
-
     for (size_t y = coord.y; y < endY; ++y) {
         size_t sourceY = y - coord.y;
         size_t destIndex = y * mInternalWidth + coord.x / elementSize;
@@ -123,16 +120,15 @@ void ImageDriver::drawText(Vec2u coord, std::string_view text) {
         const auto it =
             std::find(font.unicode_list.begin(), font.unicode_list.end(), ch);
         if (it == font.unicode_list.end()) {
-            ESP_LOGE(TAG, "Character %c not found in font", ch);
+            std::cerr << "Character" <<  ch << "not found in font" << std::endl;
             continue;
         }
         const auto index = *it;
         const auto &dsc = font.glyph_dsc[index];
         // TODO: See if this actually works
-        auto glyph = reinterpret_cast<const Image::Element *>(
-            &font.glyph_bitmap[dsc.glyph_index]);
+        auto glyph = &font.glyph_bitmap[dsc.glyph_index];
         const std::span glyphSpan{glyph, static_cast<size_t>(dsc.w_px * font.h_px)};
-        drawImage(coord, Image(glyphSpan, (size_t)dsc.w_px));
+        drawImage(coord, Image(glyphSpan, dsc.w_px));
         coord.x += dsc.w_px;
     }
 }

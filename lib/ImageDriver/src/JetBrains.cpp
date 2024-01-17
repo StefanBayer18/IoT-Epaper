@@ -259,7 +259,6 @@ static const uint8_t jetbrains_unicode_list[] = {
     57,  /* Unicode: U+0039 (9) */
     176, /* Unicode: U+00b0 (°) */
 };
-
 const Font JetBrains::font16 = {
     .unicode_list = jetbrains_unicode_list, /* List of unicode characters */
     .glyph_dsc = jetbrains_glyph_dsc,       /* Description of glyphs */

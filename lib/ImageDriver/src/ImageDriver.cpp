@@ -31,43 +31,23 @@ void ImageDriver::drawImage(Vec2u coord, const Image &image) {
     // display => Bildschirm speicher
     auto shift = coord.x % elementSize;  // Amount to shift to right
 
-    if (shift == 0) {
-        printf("Using shiftless method\n");
-        for (int imgY = 0; imgY < image.height(); imgY++) {
-            for (int imgX = 0; imgX < image.byteWidth(); imgX++) {
-                size_t displayPos =
-                    cords2index({coord.x + imgX, coord.y + imgY}).first;
-                size_t imgPos = imgY * image.byteWidth() + imgX;
-                //std::cout << std::bitset<8>(image.data()[imgPos]);
-                mImg[displayPos] |= image.data()[imgPos];
-                if ((displayPos + 1) % mInternalWidth == 0) {  // Reached end of Display
-                    printf("Prevented Display Overflow\n");
-                    break;
-                }
-            }
-            //std::cout << std::endl;
-        }
-        return;
-    }
-
-    int debugSize = 0;
-
     for (int imgY = 0; imgY < image.height(); imgY++) {
         for (int imgX = 0; imgX < image.byteWidth(); imgX++) {
-            debugSize++;
             size_t displayPos =
-                cords2index({coord.x + imgX, coord.y + imgY}).first;
+                coord2index({coord.x + imgX * elementSize, coord.y + imgY}).first;
             size_t imgPos = imgY * image.byteWidth() + imgX;
             mImg[displayPos] |= image.data()[imgPos] >> shift;
             if ((displayPos + 1) % mInternalWidth ==
-                0) {  // Reached end of Display
+                0) {  // Reached right end of Display
                 break;
             }
             mImg[displayPos + 1] |= image.data()[imgPos]
                                     << (elementSize - shift);
         }
+        if(imgY + coord.y + 1 == mHeight){ // Reached bottom end of display
+            break;
+        }
     }
-    printf("DebugSize: %d\n", debugSize);
 }
 
 void ImageDriver::drawLine(Vec2u from, Vec2u to) {
@@ -88,7 +68,7 @@ void ImageDriver::drawLine(Vec2u from, Vec2u to) {
 
 void ImageDriver::drawVerticalLine(Vec2u pos, Element mask, size_t height) {
     for (size_t i = 0; i < height; i++) {
-        mImg[cords2index({pos.x, pos.y + i}).first] |= mask;
+        mImg[coord2index({pos.x, pos.y + i}).first] |= mask;
     }
 }
 
@@ -123,7 +103,7 @@ void ImageDriver::drawFilledRect(Vec2u pos, Vec2u size) {
 }
 
 void ImageDriver::drawPoint(Vec2u coord) {
-    if (const auto [index, mask] = cords2index(coord); index != SIZE_MAX) {
+    if (const auto [index, mask] = coord2index(coord); index != SIZE_MAX) {
         mImg[index] |= (static_cast<Element>(1)
                         << ((1u - elementSize) - (coord.x % elementSize)));
     }

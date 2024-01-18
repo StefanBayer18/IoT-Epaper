@@ -8,6 +8,7 @@
 #include <string_view>
 #include "./Image.h"
 #include "./Vec2.h"
+#include <cstdio>
 
 class ImageDriver {
 public:
@@ -82,12 +83,12 @@ private:
      * @param coord The coordinates of the pixel
      * @return A pair consisting of the byte index and a bit mask
      */
-    [[nodiscard]] constexpr std::pair<size_t, Element> cords2index(
+    [[nodiscard]] constexpr std::pair<size_t, Element> coord2index(
         Vec2u coord) const {
         if (coord.x >= mWidth || coord.y >= mHeight) {
             return {};
         }
-        const size_t index = coord.y * mInternalWidth + coord.x / elementSize;
+        const size_t index = (coord.y * mInternalWidth) + (coord.x / elementSize);
         const Element mask = static_cast<Element>(1) << (
                                  (static_cast<Element>(1) - elementSize) - (
                                      coord.x % elementSize));

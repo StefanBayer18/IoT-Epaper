@@ -48,7 +48,8 @@ extern "C" void app_main() {
     //img.drawFilledRect({80, 0}, {7, img.height()});
     //img.drawFilledRect({0, 0}, {4, img.height()});
     //img.drawFilledRect({0,0},{7,10});
-    img.drawImage({80,80}, {sunnyImg, 128});
+    img.drawImage({236, 30}, {sunnyImg, 128});
+    img.drawImage({700, 400}, {sunnyImg, 128});
     //img.drawText({32, 32}, "10°");
     //printf("Added Rect\n");
     display.show(img);

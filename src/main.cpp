@@ -1,6 +1,7 @@
 #include <DisplayDriver.h>
 #include <GraphData.h>
 #include <ImageDriver.h>
+#include "sunnyImg.h"
 
 #include "config.h"
 #include "driver/gpio.h"
@@ -42,14 +43,13 @@ extern "C" void app_main() {
     // img.addPoint(12, 0);
     // img.addLine(0,0,800,480);
     // img.addFilledRect(11, 0, 200, 400);
-    //drawLayoutLines(img);
-    //drawBorderLines(img);
+    drawLayoutLines(img);
+    drawBorderLines(img);
     //img.drawFilledRect({80, 0}, {7, img.height()});
     //img.drawFilledRect({0, 0}, {4, img.height()});
     //img.drawFilledRect({0,0},{7,10});
-    const uint8_t data[] = {0xff, 0x55, 0xff, 0x55, 0xff, 0x55, 0xff, 0x55};
-    //img.drawImage({0,0}, {data, 8});
-    img.drawText({32, 32}, "10°");
+    img.drawImage({80,80}, {sunnyImg, 128});
+    //img.drawText({32, 32}, "10°");
     //printf("Added Rect\n");
     display.show(img);
 

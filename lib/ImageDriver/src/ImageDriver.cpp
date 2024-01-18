@@ -5,6 +5,9 @@
 #include <cstdlib>
 #include <string_view>
 
+#include <iostream>
+#include <bitset>
+
 #include "./Font.h"
 #include "./JetBrains.h"
 #include "esp_log.h"
@@ -24,41 +27,47 @@ void ImageDriver::drawGraph(Vec2u min, Vec2u end,
 }
 
 void ImageDriver::drawImage(Vec2u coord, const Image &image) {
-    size_t endX = std::min(coord.x + image.width(), mWidth);
-    size_t endY = std::min(coord.y + image.height(), mHeight);
-    auto shift = coord.x % elementSize;
-    for (size_t sourceY = 0; sourceY < image.height(); ++sourceY) {
-        for (size_t sourceX = 0; sourceX < image.byteWidth(); ++sourceX) {
-            auto pos = coord + Vec2u{sourceX, sourceY};
-            auto data = image.data()[sourceY * image.byteWidth() + sourceX];
-            auto index = cords2index(pos).first;
-            mImg[index] |= data >> shift;
-            if (pos.x + elementSize < endX) {
-                mImg[index + 1] |= data << (elementSize - shift);
+    // image => Übergebenes Element
+    // display => Bildschirm speicher
+    auto shift = coord.x % elementSize;  // Amount to shift to right
+
+    if (shift == 0) {
+        printf("Using shiftless method\n");
+        for (int imgY = 0; imgY < image.height(); imgY++) {
+            for (int imgX = 0; imgX < image.byteWidth(); imgX++) {
+                size_t displayPos =
+                    cords2index({coord.x + imgX, coord.y + imgY}).first;
+                size_t imgPos = imgY * image.byteWidth() + imgX;
+                //std::cout << std::bitset<8>(image.data()[imgPos]);
+                mImg[displayPos] |= image.data()[imgPos];
+                if ((displayPos + 1) % mInternalWidth == 0) {  // Reached end of Display
+                    printf("Prevented Display Overflow\n");
+                    break;
+                }
             }
+            //std::cout << std::endl;
+        }
+        return;
+    }
+
+    int debugSize = 0;
+
+    for (int imgY = 0; imgY < image.height(); imgY++) {
+        for (int imgX = 0; imgX < image.byteWidth(); imgX++) {
+            debugSize++;
+            size_t displayPos =
+                cords2index({coord.x + imgX, coord.y + imgY}).first;
+            size_t imgPos = imgY * image.byteWidth() + imgX;
+            mImg[displayPos] |= image.data()[imgPos] >> shift;
+            if ((displayPos + 1) % mInternalWidth ==
+                0) {  // Reached end of Display
+                break;
+            }
+            mImg[displayPos + 1] |= image.data()[imgPos]
+                                    << (elementSize - shift);
         }
     }
-    /*
-    // Pre-calculate shift amount for the elements from the image
-    uint8_t shift = coord.x % elementSize;
-    for (size_t y = coord.y; y < endY; ++y) {
-        size_t sourceY = y - coord.y;
-        size_t destIndex = y * mInternalWidth + coord.x / elementSize;
-        size_t sourceIndex = sourceY * image.byteWidth();
-        for (size_t x = coord.x; x < endX; x += elementSize) {
-            Element imgElement = image.data()[sourceIndex];
-            // Shift element if necessary
-            if (shift != 0 && x + elementSize < endX) {
-                imgElement >>= shift;
-                // merge with next element
-                imgElement |= image.data()[sourceIndex + 1]
-                              << (elementSize - shift);
-            }
-            mImg[destIndex++] |= imgElement;
-            sourceIndex++;
-        }
-    }
-    */
+    printf("DebugSize: %d\n", debugSize);
 }
 
 void ImageDriver::drawLine(Vec2u from, Vec2u to) {

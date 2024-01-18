@@ -9,7 +9,7 @@ class Image {
 public:
     using Element = uint8_t;
     constexpr Image(const std::span<const Element> data, size_t width)
-        : mData(data), mWidth(width), mHeight(data.size() / width) {
+        : mData(data), mWidth(width), mHeight(data.size() / (width / 8)) {
     }
 
     [[nodiscard]] constexpr size_t width() const {

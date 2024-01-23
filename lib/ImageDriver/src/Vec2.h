@@ -2,13 +2,11 @@
 #define VEC2_H
 
 #include <cmath>
-
+#include <cstddef>
 template <typename T>
 struct Vec2 {
     constexpr Vec2() = default;
-    constexpr Vec2(T x, T y)
-        : x(x), y(y) {
-    }
+    constexpr Vec2(T x, T y) : x(x), y(y) {}
     constexpr Vec2(Vec2 const&) = default;
     constexpr Vec2(Vec2&&) = default;
 
@@ -57,23 +55,19 @@ struct Vec2 {
         return Vec2(*this) /= other;
     }
 
-    constexpr T& operator[](size_t index) {
-        return index == 0 ? x : y;
-    }
+    constexpr T& operator[](size_t index) { return index == 0 ? x : y; }
 
     constexpr const T& operator[](size_t index) const {
         return index == 0 ? x : y;
     }
 
-    [[nodiscard]] constexpr T length() const {
-        return std::hypot(x, y);
-    }
+    [[nodiscard]] constexpr T length() const { return std::hypot(x, y); }
     T x;
     T y;
 };
 
-using Vec2u = Vec2<unsigned>;
+using Vec2u = Vec2<size_t>;
 using Vec2i = Vec2<int>;
 using Vec2f = Vec2<float>;
 
-#endif //VEC2_H
+#endif  // VEC2_H

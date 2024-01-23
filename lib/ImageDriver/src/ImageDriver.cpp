@@ -1,12 +1,11 @@
 #include "./ImageDriver.h"
 
 #include <algorithm>
+#include <bitset>
 #include <cstdio>
 #include <cstdlib>
-#include <string_view>
-
 #include <iostream>
-#include <bitset>
+#include <string_view>
 
 #include "./Font.h"
 #include "./JetBrains.h"
@@ -34,7 +33,8 @@ void ImageDriver::drawImage(Vec2u coord, const Image &image) {
     for (int imgY = 0; imgY < image.height(); imgY++) {
         for (int imgX = 0; imgX < image.byteWidth(); imgX++) {
             size_t displayPos =
-                coord2index({coord.x + imgX * elementSize, coord.y + imgY}).first;
+                coord2index({coord.x + imgX * elementSize, coord.y + imgY})
+                    .first;
             size_t imgPos = imgY * image.byteWidth() + imgX;
             mImg[displayPos] |= image.data()[imgPos] >> shift;
             if ((displayPos + 1) % mInternalWidth ==
@@ -44,7 +44,7 @@ void ImageDriver::drawImage(Vec2u coord, const Image &image) {
             mImg[displayPos + 1] |= image.data()[imgPos]
                                     << (elementSize - shift);
         }
-        if(imgY + coord.y + 1 == mHeight){ // Reached bottom end of display
+        if (imgY + coord.y + 1 == mHeight) {  // Reached bottom end of display
             break;
         }
     }
@@ -115,7 +115,7 @@ void ImageDriver::drawText(Vec2u coord, std::string_view text) {
     for (auto ch : text) {
         const auto it =
             std::find(font.unicode_list.begin(), font.unicode_list.end(), ch);
-            printf("%c \n", ch);
+        printf("%c \n", ch);
         if (it == font.unicode_list.end()) {
             // std::cerr << "Character" <<  ch << "not found in font" <<
             // std::endl;
@@ -125,23 +125,22 @@ void ImageDriver::drawText(Vec2u coord, std::string_view text) {
         const auto index = std::distance(font.unicode_list.begin(), it);
         const auto &dsc = font.glyph_dsc[index];
         printf("Index: %d\n", index);
-        
+
         // TODO: See if this actually works
         auto glyph = &font.glyph_bitmap[dsc.glyph_index];
         printf("Before Span\n");
         printf("Height: %d\n", font.h_px);
         printf("Width: %d\n", dsc.w_px);
-        auto byteSize = ((dsc.w_px + elementSize - 1) / elementSize);
         auto size = static_cast<size_t>(byteSize * font.h_px);
         const std::span glyphSpan{glyph, size};
         printf("OwnSize: %zu\n", size);
         printf("Size: %zu\n", glyphSpan.size());
-        for(auto c : glyphSpan){
+        for (auto c : glyphSpan) {
             printf("%d ", c);
         }
-        printf("\n");                  
+        printf("\n");
         printf("Before Img\n");
-        Image img = Image(glyphSpan, byteSize * elementSize);
+        Image img = Image(glyphSpan, dsc.w_px);
         printf("After img init Img\n");
         drawImage(coord, img);
         printf("After Img\n");

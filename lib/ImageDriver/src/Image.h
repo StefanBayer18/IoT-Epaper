@@ -1,10 +1,9 @@
 #ifndef IMAGE_H
 #define IMAGE_H
-#include <sys/_types/_size_t.h>
 
 #include <climits>
+#include <cstddef>
 #include <span>
-
 #include "./Vec2.h"
 
 /**
@@ -18,7 +17,7 @@ public:
         return (value + elementSize - 1) / elementSize;
     }
     constexpr Image(const std::span<const Element> data, size_t width)
-        : mData(data), mWidth(width), mHeight(ceil(data.size())) {}
+        : mData(data), mWidth(width), mHeight(data.size() / ceil(width)) {}
 
     [[nodiscard]] constexpr size_t width() const { return mWidth; }
     [[nodiscard]] constexpr size_t height() const { return mHeight; }

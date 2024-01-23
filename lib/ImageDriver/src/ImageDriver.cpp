@@ -131,6 +131,7 @@ void ImageDriver::drawText(Vec2u coord, std::string_view text) {
         printf("Before Span\n");
         printf("Height: %d\n", font.h_px);
         printf("Width: %d\n", dsc.w_px);
+        auto byteSize = (dsc.w_px + elementSize - 1) / elementSize;
         auto size = static_cast<size_t>(byteSize * font.h_px);
         const std::span glyphSpan{glyph, size};
         printf("OwnSize: %zu\n", size);

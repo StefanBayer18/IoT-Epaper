@@ -51,6 +51,7 @@
     "typeinfo": "cpp",
     "span": "cpp",
     "optional": "cpp",
-    "iostream": "cpp"
+    "iostream": "cpp",
+    "bitset": "cpp"
   }
 }

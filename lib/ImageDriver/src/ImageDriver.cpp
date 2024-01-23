@@ -1,132 +1,150 @@
-#include "ImageDriver.h"
-#include "esp_log.h"
-#include <cstdlib>
+#include "./ImageDriver.h"
+
 #include <algorithm>
+#include <bitset>
+#include <cstdio>
+#include <cstdlib>
+#include <iostream>
+#include <string_view>
+
+#include "./Font.h"
+#include "./JetBrains.h"
+#include "esp_log.h"
 
 #define TAG "IMAGEDRIVER"
 
-ImageDriver::ImageDriver(int _width, int _height){
-        width = _width;
-        height = _height;
-        act_width = width/8;
-        imgSize = act_width * height;
-        img = new uint8_t[imgSize]();
-}
+ImageDriver::ImageDriver(size_t width, size_t height)
+    : mWidth(width),
+      mInternalWidth(width / elementSize),
+      mHeight(height),
+      mImgSize(mInternalWidth * height),
+      mImg(mImgSize, 0) {}
 
-ImageDriver::~ImageDriver() {
-    delete[] img;
-}
-
-void ImageDriver::addGraph(int x1, int y1, int x2, int y2) {
+void ImageDriver::drawGraph(Vec2u min, Vec2u end,
+                            std::span<const Vec2f> points) {
     // TODO: Implement
 }
 
-void ImageDriver::addImage() {
-    // TODO: Implement
+void ImageDriver::drawImage(Vec2u coord, const Image &image) {
+    // image => Übergebenes Element
+    // display => Bildschirm speicher
+    auto shift = coord.x % elementSize;  // Amount to shift to right
+
+    for (int imgY = 0; imgY < image.height(); imgY++) {
+        for (int imgX = 0; imgX < image.byteWidth(); imgX++) {
+            size_t displayPos =
+                coord2index({coord.x + imgX * elementSize, coord.y + imgY})
+                    .first;
+            size_t imgPos = imgY * image.byteWidth() + imgX;
+            mImg[displayPos] |= image.data()[imgPos] >> shift;
+            if ((displayPos + 1) % mInternalWidth ==
+                0) {  // Reached right end of Display
+                break;
+            }
+            mImg[displayPos + 1] |= image.data()[imgPos]
+                                    << (elementSize - shift);
+        }
+        if (imgY + coord.y + 1 == mHeight) {  // Reached bottom end of display
+            break;
+        }
+    }
 }
 
-void ImageDriver::addLine(int x1, int y1, int x2, int y2) const {
+void ImageDriver::drawLine(Vec2u from, Vec2u to) {
     // Bresenham algorithm (gradient <= 1)
-    const int dx = x2 - x1;
-    const int dy = y2 - y1;
-    int D = (dy + dy) - dx;
-    int y = y1;
+    const Vec2i d = static_cast<Vec2i>(to) - static_cast<Vec2i>(from);
+    int D = (d.y + d.y) - d.x;
+    unsigned y = from.y;
 
-    for (int x = x1; x <= x2; x++) {
-        addPoint(x, y);
+    for (unsigned x = from.x; x <= to.x; x++) {
+        drawPoint({x, y});
         if (D > 0) {
             y += 1;
-            D = D - (dx + dx);
+            D = D - (d.x + d.x);
         }
-        D += dy + dy;
+        D += d.y + d.y;
     }
 }
 
-static int pow2(uint8_t exp) {
-    return 1 << exp;
+void ImageDriver::drawVerticalLine(Vec2u pos, Element mask, size_t height) {
+    for (size_t i = 0; i < height; i++) {
+        mImg[coord2index({pos.x, pos.y + i}).first] |= mask;
+    }
 }
 
-/**
- *  draws a Vertical Line inside a Byte
- *  @param pos Index in Image Array
- *  @param leftOffset Empty 0s on the left (0-7)
- *  @param rightOffset Empty 0s on the right (0-7)
- *  @param height Height of the Line
- */
-void ImageDriver::drawVerticalLine(int pos, int leftOffset, int rightOffset,
-                                   int height) const {
-    if (pos >= imgSize) {
+void ImageDriver::drawFilledRect(Vec2u pos, Vec2u size) {
+    if (pos.x >= mWidth || pos.y >= mHeight) {
         return;
     }
-    const uint8_t byte = (pow2(8u - leftOffset - rightOffset) - 1) <<
-                         rightOffset;
-    for (int z = 0; z < height && pos < imgSize; z++) {
-        img[pos] |= byte;
-        pos += act_width; // Next row
-    }
-}
+    unsigned width = std::min(mWidth - pos.x, size.x);
+    unsigned height = std::min(mHeight - pos.y, size.y);
 
-/**
- *  draws a square
- *  @param x X Position in Image
- *  @param y Y Position in Image
- *  @param width Width of the square
- *  @param height Height of the square
- */
-void ImageDriver::addFilledRect(int x, int y, int width, int height) const {
-    if (x >= this->width || y >= this->height) {
+    unsigned leftOffset = pos.x % elementSize;
+    unsigned rightOffset = elementSize - ((pos.x + width) % elementSize);
+
+    Element startMask = 0xffu >> leftOffset;
+    Element endMask = 0xffu << rightOffset;
+
+    if (pos.x / elementSize == (pos.x + size.x) / elementSize) {
+        // Alles in einem Byte
+        drawVerticalLine(pos, startMask & endMask, height);
         return;
     }
-    width = std::min(this->width - x, width);
-    height = std::min(this->height - y, height);
+    drawVerticalLine(pos, startMask, height);
+    width -= elementSize - leftOffset;
 
-    int pos = cords2index(x, y);
-    int leftOffset = x % 8;
-    int rightOffset = std::max(8 - (leftOffset + width), 0);
-    drawVerticalLine(pos, leftOffset, rightOffset, height);
-    width -= 8 - leftOffset;
-
-    while (width > 0) {
-        pos += 1;
-        leftOffset = 0;
-        rightOffset = std::max(8 - (leftOffset + width), 0);
-        drawVerticalLine(pos, leftOffset, rightOffset, height);
+    while (width >= 8) {
+        pos.x += 8;
+        drawVerticalLine(pos, 0xff, height);
         width -= 8;
     }
+    pos.x += 8;
+    drawVerticalLine(pos, endMask, height);
 }
 
-void ImageDriver::addPoint(int x, int y) const {
-    const int coord = cords2index(x, y);
-    img[coord] = img[coord] | (1 << (7 - (x % 8)));
-}
-
-void ImageDriver::addLayoutLines() const{
-    //Horizontal Lines
-    addFilledRect(198, 0, 4, height);
-    addFilledRect(398, 0, 4, height - 198);
-    addFilledRect(598, 0, 4, height - 198);
-
-    addFilledRect(198, height - 202, width-198, 4); 
-}
-
-void ImageDriver::addBorderLines() const{
-    addFilledRect(0, 0, 2, height);
-    addFilledRect(width - 2, 0, 2, height);
-
-    addFilledRect(0, 0, width, 2);
-    addFilledRect(0, height - 2, width, 2);
-}
-
-void ImageDriver::addText() {
-    // TODO: Implement
-}
-
-int ImageDriver::cords2index(int x, int y) const {
-    return y * act_width + x / 8;
-}
-
-/*void ImageDriver::debug(){
-    for(int x = 0; x < act_width*height; x++){
-        ESP_LOGI(TAG, "ABC");
+void ImageDriver::drawPoint(Vec2u coord) {
+    if (const auto [index, mask] = coord2index(coord); index != SIZE_MAX) {
+        mImg[index] |= (static_cast<Element>(1)
+                        << ((1u - elementSize) - (coord.x % elementSize)));
     }
-}*/
+}
+
+void ImageDriver::drawText(Vec2u coord, std::string_view text) {
+    const Font &font = JetBrains::font16;
+    printf("Printing text\n");
+    for (auto ch : text) {
+        const auto it =
+            std::find(font.unicode_list.begin(), font.unicode_list.end(), ch);
+        printf("%c \n", ch);
+        if (it == font.unicode_list.end()) {
+            // std::cerr << "Character" <<  ch << "not found in font" <<
+            // std::endl;
+            printf("Char not found\n");
+            continue;
+        }
+        const auto index = std::distance(font.unicode_list.begin(), it);
+        const auto &dsc = font.glyph_dsc[index];
+        printf("Index: %d\n", index);
+
+        // TODO: See if this actually works
+        auto glyph = &font.glyph_bitmap[dsc.glyph_index];
+        printf("Before Span\n");
+        printf("Height: %d\n", font.h_px);
+        printf("Width: %d\n", dsc.w_px);
+        auto byteSize = (dsc.w_px + elementSize - 1) / elementSize;
+        auto size = static_cast<size_t>(byteSize * font.h_px);
+        const std::span glyphSpan{glyph, size};
+        printf("OwnSize: %zu\n", size);
+        printf("Size: %zu\n", glyphSpan.size());
+        for (auto c : glyphSpan) {
+            printf("%d ", c);
+        }
+        printf("\n");
+        printf("Before Img\n");
+        Image img = Image(glyphSpan, dsc.w_px);
+        printf("After img init Img\n");
+        drawImage(coord, img);
+        printf("After Img\n");
+        coord.x += dsc.w_px;
+    }
+}

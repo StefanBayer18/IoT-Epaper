@@ -62,8 +62,8 @@ void DisplayDriver::initDisplay() const {
  */
 void DisplayDriver::show(const ImageDriver& img) const {
     sendCommand(0x13); // Data Start Transmission 2 (DTM2) (R13h)
-    for (int x = 0; x < img.act_width * img.height; x++) {
-        sendData(img.img[x]);
+    for (int x = 0; x < img.size(); x++) {
+        sendData(img[x]);
     }
     sendCommand(0x12); // Display Refresh (DRF) (R12h)
     vTaskDelay(pdMS_TO_TICKS(100));
@@ -74,7 +74,7 @@ void DisplayDriver::show(const ImageDriver& img) const {
  *  Clears Display Image
  *  @param bytes Amount of Bytes of Display
  */
-void DisplayDriver::clear(int bytes) const {
+void DisplayDriver::clear(size_t bytes) const {
     sendCommand(0x13); // Data Start Transmission 2 (DTM2) (R13h)
     for (int x = 0; x < bytes; x++) {
         sendData(0);

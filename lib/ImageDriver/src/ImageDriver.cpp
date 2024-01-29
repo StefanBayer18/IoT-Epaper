@@ -2,9 +2,6 @@
 
 #include <algorithm>
 #include <bitset>
-#include <cstdio>
-#include <cstdlib>
-#include <iostream>
 #include <string_view>
 
 #include "./Font.h"
@@ -111,40 +108,40 @@ void ImageDriver::drawPoint(Vec2u coord) {
 
 void ImageDriver::drawText(Vec2u coord, std::string_view text) {
     const Font &font = JetBrains::font16;
-    printf("Printing text\n");
+    ESP_LOGI(TAG, "Printing text\n");
     for (auto ch : text) {
         const auto it =
             std::find(font.unicode_list.begin(), font.unicode_list.end(), ch);
-        printf("%c \n", ch);
+        ESP_LOGI(TAG, "%c \n", ch);
         if (it == font.unicode_list.end()) {
             // std::cerr << "Character" <<  ch << "not found in font" <<
             // std::endl;
-            printf("Char not found\n");
+            ESP_LOGI(TAG, "Char not found\n");
             continue;
         }
         const auto index = std::distance(font.unicode_list.begin(), it);
         const auto &dsc = font.glyph_dsc[index];
-        printf("Index: %d\n", index);
+        ESP_LOGI(TAG, "Index: %d\n", index);
 
         // TODO: See if this actually works
         auto glyph = &font.glyph_bitmap[dsc.glyph_index];
-        printf("Before Span\n");
-        printf("Height: %d\n", font.h_px);
-        printf("Width: %d\n", dsc.w_px);
+        ESP_LOGI(TAG, "Before Span\n");
+        ESP_LOGI(TAG, "Height: %d\n", font.h_px);
+        ESP_LOGI(TAG, "Width: %d\n", dsc.w_px);
         auto byteSize = (dsc.w_px + elementSize - 1) / elementSize;
         auto size = static_cast<size_t>(byteSize * font.h_px);
         const std::span glyphSpan{glyph, size};
-        printf("OwnSize: %zu\n", size);
-        printf("Size: %zu\n", glyphSpan.size());
+        ESP_LOGI(TAG, "OwnSize: %zu\n", size);
+        ESP_LOGI(TAG, "Size: %zu\n", glyphSpan.size());
         for (auto c : glyphSpan) {
-            printf("%d ", c);
+            ESP_LOGI(TAG, "%d ", c);
         }
-        printf("\n");
-        printf("Before Img\n");
+        ESP_LOGI(TAG, "\n");
+        ESP_LOGI(TAG, "Before Img\n");
         Image img = Image(glyphSpan, dsc.w_px);
-        printf("After img init Img\n");
+        ESP_LOGI(TAG, "After img init Img\n");
         drawImage(coord, img);
-        printf("After Img\n");
+        ESP_LOGI(TAG, "After Img\n");
         coord.x += dsc.w_px;
     }
 }

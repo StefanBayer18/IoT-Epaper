@@ -1,5 +1,8 @@
 #include <GraphData.h>
 #include <optional>
+#include "esp_log.h"
+
+#define TAG "GraphData"
 
 GraphData::GraphData(size_t _size)
     : size(_size) {
@@ -29,21 +32,21 @@ void GraphData::saveData() const {
     const std::optional<nvs_handle_t> nvsHandleOptional =
         openNVS(NVS_READWRITE);
     if (!nvsHandleOptional.has_value()) {
-        printf("Error opening NVS\n");
+        ESP_LOGI(TAG, "Error opening NVS\n");
         return;
     }
     const nvs_handle_t nvsHandle = nvsHandleOptional.value();
     esp_err_t err = nvs_set_u8(nvsHandle, STARTKEY, start);
     if (err != ESP_OK)
-        printf("Error writing start\n");
+        ESP_LOGI(TAG, "Error writing start\n");
 
     err = nvs_set_u8(nvsHandle, ENDKEY, end);
     if (err != ESP_OK)
-        printf("Error writing end\n");
+        ESP_LOGI(TAG, "Error writing end\n");
 
     err = nvs_set_blob(nvsHandle, DATAKEY, data, bitSize);
     if (err != ESP_OK)
-        printf("Error writing data\n");
+        ESP_LOGI(TAG, "Error writing data\n");
 
     nvs_close(nvsHandle);
 }
@@ -51,7 +54,7 @@ void GraphData::saveData() const {
 void GraphData::getData() {
     const std::optional<nvs_handle_t> nvsHandleOptional = openNVS(NVS_READONLY);
     if (!nvsHandleOptional.has_value()) {
-        printf("Error opening NVS\n");
+        ESP_LOGI(TAG, "Error opening NVS\n");
         return;
     }
     const nvs_handle_t nvsHandle = nvsHandleOptional.value();
@@ -59,19 +62,19 @@ void GraphData::getData() {
 
     esp_err_t err = nvs_get_u8(nvsHandle, STARTKEY, &start);
     if (err != ESP_OK) {
-        printf("Error reading start\n");
+        ESP_LOGI(TAG, "Error reading start\n");
     }
 
     err = nvs_get_u8(nvsHandle, ENDKEY, &end);
     if (err != ESP_OK) {
-        printf("Error reading end\n");
+        ESP_LOGI(TAG, "Error reading end\n");
     }
 
     err = nvs_get_blob(nvsHandle, DATAKEY, data, &readSize);
     if (err != ESP_OK) {
-        printf("Error reading data\n");
+        ESP_LOGI(TAG, "Error reading data\n");
     } else if (readSize != bitSize) {
-        printf("Error reading data\nRead invalid data\n");
+        ESP_LOGI(TAG, "Error reading data\nRead invalid data\n");
     }
 
     nvs_close(nvsHandle);
@@ -80,7 +83,7 @@ void GraphData::getData() {
 std::optional<nvs_handle_t> GraphData::openNVS(nvs_open_mode_t mode) {
     esp_err_t err = nvs_flash_init();
     if (err != ESP_OK) {
-        printf("NVS init failed\n");
+        ESP_LOGI(TAG, "NVS init failed\n");
         return {};
     }
 
@@ -88,7 +91,7 @@ std::optional<nvs_handle_t> GraphData::openNVS(nvs_open_mode_t mode) {
 
     err = nvs_open(STORAGE, mode, &nvsHandle);
     if (err != ESP_OK) {
-        printf("Error opening NVS\n");
+        ESP_LOGI(TAG, "Error opening NVS\n");
         return {};
     }
 

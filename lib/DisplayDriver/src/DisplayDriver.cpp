@@ -3,6 +3,9 @@
 #include "DisplayDriver.h"
 #include "driver/gpio.h"
 #include <driver/spi_master.h>
+#include "esp_log.h"
+
+#define TAG "DISPLAYDRIVER"
 
 DisplayDriver::DisplayDriver(const gpio_num_t DIN, const gpio_num_t SCLK,
                              const gpio_num_t CS, const gpio_num_t DC,
@@ -14,7 +17,7 @@ DisplayDriver::DisplayDriver(const gpio_num_t DIN, const gpio_num_t SCLK,
     reset_pin = RST;
     busy_pin = BUSY;
 
-    printf("Building DisplayDriver\n");
+    ESP_LOGI(TAG, "Building DisplayDriver\n");
 
     // Configure Pins
     ESP_ERROR_CHECK(gpio_set_direction(RST, GPIO_MODE_OUTPUT));
@@ -53,7 +56,7 @@ void DisplayDriver::initDisplay() const {
     sendCommand(0x04); // Turn device on
     //vTaskDelay(pdMS_TO_TICKS(100));
     waitIdle();
-    printf("Done Waiting succesfully\n");
+    ESP_LOGI(TAG, "Done Waiting succesfully\n");
 }
 
 /**
@@ -119,12 +122,12 @@ void DisplayDriver::waitIdle() const {
     vTaskDelay(pdMS_TO_TICKS(20));
     int idle = 0;
     while (idle == 0) {
-        printf(".");
+        ESP_LOGI(TAG, ".");
         sendCommand(0x71); // Get Status (FLG) (R71h)
         idle = gpio_get_level(busy_pin);
         vTaskDelay(pdMS_TO_TICKS(50));
     }
-    printf("\n");
+    ESP_LOGI(TAG, "\n");
 }
 
 /**

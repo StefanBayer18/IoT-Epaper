@@ -64,7 +64,7 @@ WifiCall::~WifiCall() {
 }
 
 CallError WifiCall::operator()() {
-    if (!Wifi::established) {
+    if (!Wifi::established && false) {
         ESP_LOGE(TAG, "Wifi not established");
         return CallError::NoWifi;
     }

@@ -12,7 +12,7 @@ public:
     void show(const ImageDriver& img) const;
     void sleep() const;
     void clear(size_t pixel) const;
-    void waitIdle() const;
+    bool waitIdle() const;
     void sendCommand(char cmd) const;
     void sendData(uint8_t data) const;
     void reset() const;
@@ -28,6 +28,7 @@ private:
     void sendSPI(uint8_t data) const;
     void initSPI();
     void initDisplay() const;
+    void editLUT(uint8_t* lut_vcom,  uint8_t* lut_ww, uint8_t* lut_bw, uint8_t* lut_wb, uint8_t* lut_bb) const;
 };
 
 #endif

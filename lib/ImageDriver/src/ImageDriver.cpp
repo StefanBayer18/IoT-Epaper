@@ -48,6 +48,13 @@ void ImageDriver::drawImage(Vec2u coord, const Image &image) {
 }
 
 void ImageDriver::drawLine(Vec2u from, Vec2u to) {
+    // Horizontal Line
+    if(from.x == to.x){
+        const auto [index, mask] = coord2index({from.x, from.y});
+        for(int y = 0; y < to.y - from.y; y++){
+            mImg[index + y * mInternalWidth] |= mask;
+        }
+    }
     // Bresenham algorithm (gradient <= 1)
     const Vec2i d = static_cast<Vec2i>(to) - static_cast<Vec2i>(from);
     int D = (d.y + d.y) - d.x;
@@ -101,8 +108,7 @@ void ImageDriver::drawFilledRect(Vec2u pos, Vec2u size) {
 
 void ImageDriver::drawPoint(Vec2u coord) {
     if (const auto [index, mask] = coord2index(coord); index != SIZE_MAX) {
-        mImg[index] |= (static_cast<Element>(1)
-                        << ((1u - elementSize) - (coord.x % elementSize)));
+        mImg[index] |= mask;
     }
 }
 
@@ -114,7 +120,7 @@ void ImageDriver::drawText(Vec2u coord, std::string_view text) {
         if (it == font.unicode_list.end()) {
             // std::cerr << "Character" <<  ch << "not found in font" <<
             // std::endl;
-            ESP_LOGI(IMAGETAG, "Char not found\n");
+            //ESP_LOGI(IMAGETAG, "Char not found\n");
             continue;
         }
         const auto index = std::distance(font.unicode_list.begin(), it);

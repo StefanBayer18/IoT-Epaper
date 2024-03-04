@@ -89,9 +89,7 @@ private:
             return {};
         }
         const size_t index = (coord.y * mInternalWidth) + (coord.x / elementSize);
-        const Element mask = static_cast<Element>(1) << (
-                                 (static_cast<Element>(1) - elementSize) - (
-                                     coord.x % elementSize));
+        const Element mask = static_cast<Element>(1) << (elementSize - (coord.x % elementSize));
         return {index, mask};
     }
 

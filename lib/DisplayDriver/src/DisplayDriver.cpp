@@ -6,6 +6,7 @@
 #include "esp_log.h"
 
 #define TAG "DISPLAYDRIVER"
+#define PowerPin GPIO_NUM_4
 
 uint8_t LUT_VCOM_7IN5_V2[]={	
 	0x0,	0xF,	0xF,	0x0,	0x0,	0x1,	
@@ -75,6 +76,7 @@ DisplayDriver::DisplayDriver(const gpio_num_t DIN, const gpio_num_t SCLK,
     ESP_ERROR_CHECK(gpio_set_direction(DC, GPIO_MODE_OUTPUT));
     ESP_ERROR_CHECK(gpio_set_direction(CS, GPIO_MODE_OUTPUT));
     ESP_ERROR_CHECK(gpio_set_direction(BUSY, GPIO_MODE_INPUT));
+    ESP_ERROR_CHECK(gpio_set_direction(PowerPin, GPIO_MODE_OUTPUT));
 
     initSPI();
 
@@ -106,7 +108,7 @@ void DisplayDriver::editLUT(uint8_t* lut_vcom,  uint8_t* lut_ww, uint8_t* lut_bw
 
 void DisplayDriver::initDisplay() const {
     // BWRmode & LUT from register (Page: 20)
-
+    do{
     reset();
 
     // Power Setting (PWR) (R01h)
@@ -127,11 +129,12 @@ void DisplayDriver::initDisplay() const {
     sendData(0x2F);
     sendData(0x17);
 
-    do{
-    sendCommand(0x04); // Turn device on
-    vTaskDelay(pdMS_TO_TICKS(100));
+    printf("Turning Device on\n");
+        sendCommand(0x04); // Turn device on
+    vTaskDelay(pdMS_TO_TICKS(50));
     }
     while(!waitIdle());
+    printf("Device powered on\n");
 
     //sendCommand(0x30);
     //sendData(0x6);
@@ -139,7 +142,7 @@ void DisplayDriver::initDisplay() const {
     
     //vTaskDelay(pdMS_TO_TICKS(100));
 
-    sendCommand(0X00);			//PANNEL SETTING BRIGGS
+    sendCommand(0X00);			//PANNEL SETTING
     sendData(0x3F);
 
     sendCommand(0x61);        	//tres
@@ -224,7 +227,7 @@ void DisplayDriver::reset() const {
     gpio_set_level(reset_pin, 1);
     vTaskDelay(pdMS_TO_TICKS(200));
     gpio_set_level(reset_pin, 0);
-    vTaskDelay(pdMS_TO_TICKS(4));
+    vTaskDelay(pdMS_TO_TICKS(10));
     gpio_set_level(reset_pin, 1);
     vTaskDelay(pdMS_TO_TICKS(200));
 }
@@ -233,21 +236,20 @@ void DisplayDriver::reset() const {
  *  Wait for Display to finish Interaction
  */
 bool DisplayDriver::waitIdle() const {
-    vTaskDelay(pdMS_TO_TICKS(20));
+    //vTaskDelay(pdMS_TO_TICKS(20));
     int idle = 0;
     int x = 0;
     while (idle == 0) {
-        printf(".");
-        sendCommand(0x71); // Get Status (FLG) (R71h)
+        //printf(".");
+        //sendCommand(0x71); // Get Status (FLG) (R71h)
         idle = gpio_get_level(busy_pin);
-        vTaskDelay(pdMS_TO_TICKS(50));
-        x++;
-        if(x > 1000){
+        vTaskDelay(5);
+        if(x++ > 1000){
             printf("Couldnt start Display-------------------\n");
             return false;
         }
     }
-    printf("\n");
+    printf("Done Waiting Succesfully\n");
     return true;
 }
 
@@ -277,7 +279,7 @@ void DisplayDriver::initSPI() {
 
     spi_device_interface_config_t dev_config{};
     dev_config.mode = 0;                 // SPI mode (0, 1, 2, or 3)
-    dev_config.clock_speed_hz = 2000000; // Clock frequency
+    dev_config.clock_speed_hz = 1000000; // Clock frequency
     dev_config.spics_io_num = cs_pin;    // Chip select pin
     dev_config.queue_size = 1;
 

@@ -19,10 +19,8 @@
 #define WIFIPASS "EMPTY"
 
 // Database
-#define DATABASEUSER "WeatherDisplay"
-#define DATABASEPASS "EINKDISPLAY"
-#define DATABASEDATA "Discord"
-#define DATABASETABLE "OUTSIDE"
+#define OUTSIDEURL "http://192.168.188.53/outside.php"
+#define INDOORURL "http://192.168.188.53/room.php"
 
 // API
 #define APIQUERY "http://api.weatherapi.com/v1/forecast.json?key=PLACEAPIKEYHERE&q=Bad Hersfeld&days=3&aqi=no&alerts=no"

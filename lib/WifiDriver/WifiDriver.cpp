@@ -78,7 +78,7 @@ CallError WifiCall::operator()() {
         }
         switch (evt->event_id) {
             case HTTP_EVENT_ON_DATA: {
-                ESP_LOGI(TAG, "Got data");
+                //ESP_LOGI(TAG, "Got data");
                 auto call = static_cast<WifiCall *>(evt->user_data);
                 if (!call) {
                     ESP_LOGE(TAG, "No user data");
@@ -100,22 +100,22 @@ CallError WifiCall::operator()() {
                 break;
             }
             case HTTP_EVENT_ERROR:
-                ESP_LOGE(TAG, "HTTP_EVENT_ERROR");
+                //ESP_LOGE(TAG, "HTTP_EVENT_ERROR");
                 break;
             case HTTP_EVENT_ON_CONNECTED:
-                ESP_LOGI(TAG, "HTTP_EVENT_ON_CONNECTED");
+                //ESP_LOGI(TAG, "HTTP_EVENT_ON_CONNECTED");
                 break;
             case HTTP_EVENT_HEADER_SENT:
-                ESP_LOGI(TAG, "HTTP_EVENT_HEADER_SENT");
+                //ESP_LOGI(TAG, "HTTP_EVENT_HEADER_SENT");
                 break;
             case HTTP_EVENT_ON_HEADER:
-                ESP_LOGI(TAG, "HTTP_EVENT_ON_HEADER");
+                //ESP_LOGI(TAG, "HTTP_EVENT_ON_HEADER");
                 break;
             case HTTP_EVENT_DISCONNECTED:
-                ESP_LOGI(TAG, "HTTP_EVENT_DISCONNECTED");
+                //ESP_LOGI(TAG, "HTTP_EVENT_DISCONNECTED");
                 break;
             case HTTP_EVENT_REDIRECT:
-                ESP_LOGI(TAG, "HTTP_EVENT_REDIRECT");
+                //ESP_LOGI(TAG, "HTTP_EVENT_REDIRECT");
                 break;
         }
         return ESP_OK;

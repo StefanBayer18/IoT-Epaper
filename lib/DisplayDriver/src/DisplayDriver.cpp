@@ -6,7 +6,6 @@
 #include "esp_log.h"
 
 #define TAG "DISPLAYDRIVER"
-#define PowerPin GPIO_NUM_4
 
 uint8_t LUT_VCOM_7IN5_V2[]={	
 	0x0,	0xF,	0xF,	0x0,	0x0,	0x1,	
@@ -76,7 +75,6 @@ DisplayDriver::DisplayDriver(const gpio_num_t DIN, const gpio_num_t SCLK,
     ESP_ERROR_CHECK(gpio_set_direction(DC, GPIO_MODE_OUTPUT));
     ESP_ERROR_CHECK(gpio_set_direction(CS, GPIO_MODE_OUTPUT));
     ESP_ERROR_CHECK(gpio_set_direction(BUSY, GPIO_MODE_INPUT));
-    ESP_ERROR_CHECK(gpio_set_direction(PowerPin, GPIO_MODE_OUTPUT));
 
     initSPI();
 
@@ -130,17 +128,11 @@ void DisplayDriver::initDisplay() const {
     sendData(0x17);
 
     printf("Turning Device on\n");
-        sendCommand(0x04); // Turn device on
+    sendCommand(0x04); // Turn device on
     vTaskDelay(pdMS_TO_TICKS(50));
     }
     while(!waitIdle());
     printf("Device powered on\n");
-
-    //sendCommand(0x30);
-    //sendData(0x6);
-
-    
-    //vTaskDelay(pdMS_TO_TICKS(100));
 
     sendCommand(0X00);			//PANNEL SETTING
     sendData(0x3F);

@@ -2,7 +2,8 @@
 #include <DisplayDriver.h>
 #include <ImageDriver.h>
 #include <WifiDriver.h>
-#include "sunnyImg.h"
+
+#include <optional>
 
 #include "config.h"
 #include "esp_log.h"
@@ -10,7 +11,7 @@
 #include "esp_system.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include <optional>
+#include "sunnyImg.h"
 
 #define CONFIG_ARDUINO_LOOP_STACK_SIZE 16384
 
@@ -24,16 +25,29 @@ RTC_NOINIT_ATTR uint8_t
 RTC_NOINIT_ATTR uint16_t start;
 RTC_NOINIT_ATTR uint16_t end;
 
-float temp;
-float minTemp;
-float maxTemp;
-float humi;
-int imgCode;
-int date;
-int hour;
-int minute;
+enum MeasurementIndex {
+    DataToday,
+    DataTomorrow,
+    DataDayAfterTomorrow,
+    DataCurrent,
+    DataInside,
+    DataOutside,
+    DataIndexCount
+};
 
-const std::string weekdays[] = {"Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"};
+RTC_NOINIT_ATTR struct Data {
+    float temp;
+    float minTemp;
+    float maxTemp;
+    float humi;
+    int imgCode;
+    int date;
+    int hour;
+    int minute;
+} measurements[DataIndexCount];
+
+const std::string weekdays[] = {"Montag",  "Dienstag", "Mittwoch", "Donnerstag",
+                                "Freitag", "Samstag",  "Sonntag"};
 
 Image imgCodeToImg(int code) {
     switch (code) {
@@ -46,11 +60,12 @@ Image imgCodeToImg(int code) {
     }
 }
 
-void drawWeekdays(ImageDriver& img){
+void drawWeekdays(ImageDriver& img) {
     img.drawText({63, 35}, "Momentan");
-    img.drawText({263, 35}, weekdays[date]);
-    img.drawText({463, 35}, weekdays[(date + 1) % 7]);
-    img.drawText({663, 35}, weekdays[(date + 2) % 7]);
+    auto& data = measurements[DataInside];
+    img.drawText({263, 35}, weekdays[data.date]);
+    img.drawText({463, 35}, weekdays[(data.date + 1) % 7]);
+    img.drawText({663, 35}, weekdays[(data.date + 2) % 7]);
 }
 
 void drawLayoutLines(ImageDriver& driver) {
@@ -89,15 +104,15 @@ void drawGraph(ImageDriver& img) {
     //  Pro Grad 4 Pixel
     img.drawFilledRect({250, 428}, {500, 2});  // Nulllinie
     img.drawFilledRect({248, 290}, {2, 200});  // Temp Anzeige
-    for (unsigned int x = start; x != end;
-         x = (x + 1) % GRAPHWIDTH) {
-            printf("X: %d; Y: %d, Val: %d\n", 250+x, (unsigned int)(470 - graphData[x]), graphData[x]);
+    for (unsigned int x = start; x != end; x = (x + 1) % GRAPHWIDTH) {
+        printf("X: %d; Y: %d, Val: %d\n", 250 + x,
+               (unsigned int)(470 - graphData[x]), graphData[x]);
         img.drawPoint({250 + x, (unsigned int)(470 - graphData[x])});
         // TODO kontinuierliche Linie erzeugen
     }
 }
 
-std::optional<JsonDocument> getAPIData(std::string query) {
+std::optional<JsonDocument> getAPIData(const std::string& query) {
     JsonDocument json;
 
     int trys = 5;
@@ -107,7 +122,7 @@ std::optional<JsonDocument> getAPIData(std::string query) {
         call = Wifi::call(query, [&json, &err](std::span<const uint8_t> data) {
             err = deserializeJson(json, data.data());
         });
-        if(call == CallError::None && err == DeserializationError::Ok){
+        if (call == CallError::None && err == DeserializationError::Ok) {
             return std::optional{json};
         }
         vTaskDelay(pdMS_TO_TICKS(100));
@@ -115,104 +130,102 @@ std::optional<JsonDocument> getAPIData(std::string query) {
     return std::nullopt;
 }
 
-void drawDatabaseData(ImageDriver& img){
-    //printf("Getting Outside Data\n");
+void drawDatabaseData(ImageDriver& img) {
+    // printf("Getting Outside Data\n");
+    static auto urls =
+        std::array{std::string(OUTSIDEURL), std::string(INDOORURL)};
+    static auto dataIndex = std::array{DataOutside, DataInside};
+    char buffer[64];
+    for (size_t i = 0; i < urls.size(); ++i) {
+        auto answer = getAPIData(urls[i]);
+        if (!answer.has_value()) {
+            return;
+        }
+        JsonDocument json = *answer;
+        auto& data = measurements[dataIndex[i]];
+        data.temp = json[0]["Temp"].as<float>();
+        data.humi = json[0]["Humidity"].as<float>();
+        std::sprintf(buffer, "%5.2f °c", data.temp);
+        img.drawCenteredText({100, 280 + i * 110}, {buffer, 8});
+        std::sprintf(buffer, "%5.2f%%", data.humi);
+        img.drawCenteredText({100, 320 + i * 110}, {buffer, 6});
+        data.date = json[0]["Date"].as<int>();
+        data.hour = json[0]["Hour"].as<int>();
+        data.minute = json[0]["Minute"].as<int>();
+    }
     std::optional<JsonDocument> answer;
-    if(answer = getAPIData(OUTSIDEURL); !answer.has_value()){
+    if (answer = getAPIData(OUTSIDEURL); !answer.has_value()) {
         return;
     }
     JsonDocument json = *answer;
-    temp = json[0]["Temp"].as<float>();
-    humi = json[0]["Humidity"].as<float>();
-    //img.drawText({100, 250}, std::to_string(temp) + " °c");
-    //img.drawText({70, 290}, std::to_string(humi) + " %");
-    img.drawCenteredText({100, 280}, std::to_string(temp) + " °c");
-    img.drawCenteredText({100, 320}, std::to_string(humi) + " %");
+    auto& data = measurements[DataInside];
+    data.temp = json[0]["Temp"].as<float>();
+    data.humi = json[0]["Humidity"].as<float>();
+    // img.drawText({100, 250}, std::to_string(temp) + " °c");
+    // img.drawText({70, 290}, std::to_string(humi) + " %");
+    img.drawCenteredText({100, 280}, std::to_string(data.temp) + " °c");
+    img.drawCenteredText({100, 320}, std::to_string(data.humi) + " %");
 
     img.drawFilledRect({33, 360}, {144, 2});
 
-    //printf("Getting Inside Data\n");
+    // printf("Getting Inside Data\n");
     if (answer = getAPIData(INDOORURL); !answer.has_value()) {
         return;
     }
     json = *answer;
-    temp = json[0]["Temp"].as<float>();
-    humi = json[0]["Humidity"].as<float>();
-    img.drawCenteredText({100, 390}, std::to_string(temp) + " °c");
-    img.drawCenteredText({100, 430}, std::to_string(humi) + " %");
+    data.temp = json[0]["Temp"].as<float>();
+    data.humi = json[0]["Humidity"].as<float>();
+    img.drawCenteredText({100, 390}, std::to_string(data.temp) + " °c");
+    img.drawCenteredText({100, 430}, std::to_string(data.humi) + " %");
 
-    date = json[0]["Date"].as<int>();
-    hour = json[0]["Hour"].as<int>();
-    minute = json[0]["Minute"].as<int>();
-    //printf("Current Date: %d\n", date);
+    data.date = json[0]["Date"].as<int>();
+    data.hour = json[0]["Hour"].as<int>();
+    data.minute = json[0]["Minute"].as<int>();
+    // printf("Current Date: %d\n", date);
 }
 
 void drawAPIData(ImageDriver& img) {
     printf("Getting API Data\n");
     auto answer = getAPIData(INDOORURL);
-    if(!answer.has_value()){
+    if (!answer.has_value()) {
         return;
     }
     JsonDocument json = *answer;
     // current values
-    temp = json["current"]["temp_c"].as<float>();
-    humi = json["current"]["humidity"].as<float>();
-    imgCode = json["current"]["condition"]["code"].as<int>();
-    printf("temp: %0.2f, humi: %0.2f, imgCode: %d\n", temp, humi, imgCode);
-    img.drawImage({36, 56}, imgCodeToImg(imgCode));
+    auto& current = measurements[DataCurrent];
+    current.temp = json["current"]["temp_c"].as<float>();
+    current.humi = json["current"]["humidity"].as<float>();
+    current.imgCode = json["current"]["condition"]["code"].as<int>();
+    printf("temp: %0.2f, humi: %0.2f, imgCode: %d\n", current.temp,
+           current.humi, current.imgCode);
+    img.drawImage({36, 56}, imgCodeToImg(current.imgCode));
     char buffer[64];
-    std::sprintf(buffer, "%5.2f °c", temp);
+    std::sprintf(buffer, "%5.2f °c", current.temp);
     img.drawText({70, 200}, {buffer, 8});
-    std::sprintf(buffer, "%5.2f%%", humi);
+    std::sprintf(buffer, "%5.2f%%", current.humi);
     img.drawText({70, 240}, {buffer, 6});
-    addGraphData(temp);
-
-    // todays value
-    minTemp =
-        json["forecast"]["forecastday"][0]["day"]["mintemp_c"].as<float>();
-    maxTemp =
-        json["forecast"]["forecastday"][0]["day"]["maxtemp_c"].as<float>();
-    humi = json["forecast"]["forecastday"][0]["day"]["avghumidity"].as<float>();
-    imgCode = json["forecast"]["forecastday"][0]["day"]["condition"]["code"]
-                  .as<int>();
-    printf("%0.2f - %0.2f\n %0.2f\nImgCode: %d\n", minTemp, maxTemp, humi,
-           imgCode);
-    std::sprintf(buffer, "%5.2f - %5.2f °c", minTemp, maxTemp);
-    img.drawImage({236, 56}, imgCodeToImg(imgCode));
-    img.drawText({270, 200}, {buffer, 16});
-    std::sprintf(buffer, "%5.2f%%", humi);
-    img.drawText({270, 240}, {buffer, 6});
-
-    // forecast
-    minTemp =
-        json["forecast"]["forecastday"][1]["day"]["mintemp_c"].as<float>();
-    maxTemp =
-        json["forecast"]["forecastday"][1]["day"]["maxtemp_c"].as<float>();
-    humi = json["forecast"]["forecastday"][1]["day"]["avghumidity"].as<float>();
-    imgCode = json["forecast"]["forecastday"][1]["day"]["condition"]["code"]
-                  .as<int>();
-    printf("%0.2f - %0.2f\n %0.2f\nImgCode: %d\n", minTemp, maxTemp, humi,
-           imgCode);
-    img.drawImage({436, 56}, imgCodeToImg(imgCode));
-    std::sprintf(buffer, "%5.2f - %5.2f °c", minTemp, maxTemp);
-    img.drawText({470, 200}, {buffer, 16});
-    std::sprintf(buffer, "%5.2f%%", humi);
-    img.drawText({470, 240}, {buffer, 6});
-
-    minTemp =
-        json["forecast"]["forecastday"][2]["day"]["mintemp_c"].as<float>();
-    maxTemp =
-        json["forecast"]["forecastday"][2]["day"]["maxtemp_c"].as<float>();
-    humi = json["forecast"]["forecastday"][2]["day"]["avghumidity"].as<float>();
-    imgCode = json["forecast"]["forecastday"][2]["day"]["condition"]["code"]
-                  .as<int>();
-    printf("%0.2f - %0.2f\n %0.2f\nImgCode: %d\n", minTemp, maxTemp, humi,
-           imgCode);
-    img.drawImage({636, 56}, imgCodeToImg(imgCode));
-    std::sprintf(buffer, "%5.2f - %5.2f °c", minTemp, maxTemp);
-    img.drawText({670, 200}, {buffer, 16});
-    std::sprintf(buffer, "%5.2f%%", humi);
-    img.drawText({670, 240}, {buffer, 6});
+    addGraphData(current.temp);
+    for (size_t i = 0; i < 3; ++i) {
+        // forecast and today value
+        auto& day = measurements[i];
+        day.minTemp =
+            json["forecast"]["forecastday"][i]["day"]["mintemp_c"].as<float>();
+        day.maxTemp =
+            json["forecast"]["forecastday"][i]["day"]["maxtemp_c"].as<float>();
+        day.humi = json["forecast"]["forecastday"][i]["day"]["avghumidity"]
+                       .as<float>();
+        day.imgCode =
+            json["forecast"]["forecastday"][i]["day"]["condition"]["code"]
+                .as<int>();
+        printf("%0.2f - %0.2f\n %0.2f\nImgCode: %d\n", day.minTemp, day.maxTemp,
+               day.humi, day.imgCode);
+        std::sprintf(buffer, "%5.2f - %5.2f °c", day.minTemp, day.maxTemp);
+        Vec2u offset = {200 * i, 0};
+        img.drawImage(Vec2u{236, 56} + offset, imgCodeToImg(day.imgCode));
+        img.drawCenteredText(Vec2u{300, 200} + offset, {buffer, 16});
+        std::sprintf(buffer, "%5.2f%%", day.humi);
+        img.drawCenteredText(Vec2u{300, 240} + offset, {buffer, 6});
+    }
 }
 
 extern "C" void app_main() {
@@ -222,6 +235,16 @@ extern "C" void app_main() {
         start = 0;
         end = 0;
         memset(graphData, 0, GRAPHWIDTH);
+        for (auto& data : measurements) {
+            data.temp = NAN;
+            data.minTemp = NAN;
+            data.maxTemp = NAN;
+            data.humi = NAN;
+            data.imgCode = -1;
+            data.date = -1;
+            data.hour = -1;
+            data.minute = -1;
+        }
         printf("Initialized GraphData");
     }
 
@@ -252,7 +275,7 @@ extern "C" void app_main() {
     display.show(img);
     vTaskDelay(pdMS_TO_TICKS(1000));
 
-    //display.clear(img.size());
+    // display.clear(img.size());
 
     display.sleep();
     vTaskDelay(pdMS_TO_TICKS(1000));

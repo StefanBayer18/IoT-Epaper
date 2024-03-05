@@ -21,11 +21,14 @@ static void wifi_event_handler(void *event_handler_arg,
         Wifi::established = false;
         ESP_LOGI(TAG, "retry to connect to the AP");
         esp_wifi_connect();
-    } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
+    } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) { // Doesnt execute
         auto *event = static_cast<ip_event_got_ip_t *>(event_data);
         ESP_LOGI(TAG, "got ip:" IPSTR, IP2STR(&(event->ip_info.ip)));
         Wifi::established = true;
-    } else {
+    } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_CONNECTED){
+        Wifi::established = true;
+    }
+    else {
         ESP_LOGI(TAG, "unhandled event (%s) with ID %ld!", event_base,
                  event_id);
     }

@@ -108,7 +108,7 @@ std::optional<JsonDocument> getAPIData(std::string query) {
             err = deserializeJson(json, data.data());
         });
         if(call == CallError::None && err == DeserializationError::Ok){
-            return json;
+            return std::optional{json};
         }
         vTaskDelay(pdMS_TO_TICKS(100));
     }
@@ -117,11 +117,11 @@ std::optional<JsonDocument> getAPIData(std::string query) {
 
 void drawDatabaseData(ImageDriver& img){
     //printf("Getting Outside Data\n");
-    auto answer = getAPIData(OUTSIDEURL);
-    if(!answer.has_value()){
+    std::optional<JsonDocument> answer;
+    if(answer = getAPIData(OUTSIDEURL); !answer.has_value()){
         return;
     }
-    JsonDocument json = answer.value();
+    JsonDocument json = *answer;
     temp = json[0]["Temp"].as<float>();
     humi = json[0]["Humidity"].as<float>();
     //img.drawText({100, 250}, std::to_string(temp) + " °c");
@@ -132,7 +132,10 @@ void drawDatabaseData(ImageDriver& img){
     img.drawFilledRect({33, 360}, {144, 2});
 
     //printf("Getting Inside Data\n");
-    json = getAPIData(INDOORURL);
+    if (answer = getAPIData(INDOORURL); !answer.has_value()) {
+        return;
+    }
+    json = *answer;
     temp = json[0]["Temp"].as<float>();
     humi = json[0]["Humidity"].as<float>();
     img.drawCenteredText({100, 390}, std::to_string(temp) + " °c");
@@ -150,7 +153,7 @@ void drawAPIData(ImageDriver& img) {
     if(!answer.has_value()){
         return;
     }
-    JsonDocument json = answer.value();
+    JsonDocument json = *answer;
     // current values
     temp = json["current"]["temp_c"].as<float>();
     humi = json["current"]["humidity"].as<float>();

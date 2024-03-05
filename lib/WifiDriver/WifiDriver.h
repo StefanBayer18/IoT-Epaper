@@ -17,9 +17,6 @@ public:
     static void init(std::string_view ssid, std::string_view password);
     static CallError call(std::string url, WifiCallback callback);
     volatile static bool established;
-
-private:
-    static bool is_initialized;
 };
 
 class WifiCall {

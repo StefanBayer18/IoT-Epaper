@@ -112,6 +112,22 @@ void ImageDriver::drawPoint(Vec2u coord) {
     }
 }
 
+void ImageDriver::drawCenteredText(Vec2u coord, std::string_view text){
+    const Font &font = JetBrains::font24;
+    int width = 0;
+    for (auto ch : text) {
+        const auto it =
+            std::find(font.unicode_list.begin(), font.unicode_list.end(), ch);
+        if (it == font.unicode_list.end()) {
+            continue;
+        }
+        const auto index = std::distance(font.unicode_list.begin(), it);
+        const auto &dsc = font.glyph_dsc[index];
+        width += dsc.w_px;
+    }
+    drawText({coord.x - width/2, coord.y}, text);
+}
+
 void ImageDriver::drawText(Vec2u coord, std::string_view text) {
     const Font &font = JetBrains::font24;
     for (auto ch : text) {

@@ -18,6 +18,14 @@ public:
     ImageDriver(size_t width, size_t height);
 
     /**
+     * Draws a text centered around coordinate.
+     *
+     * @param coord The coordinates of the middle of the text.
+     * @param text The text to draw.
+     */
+    void drawCenteredText(Vec2u coord, std::string_view text);
+
+    /**
      * Draws a text.
      *
      * @param coord The coordinates of the top left corner of the text.

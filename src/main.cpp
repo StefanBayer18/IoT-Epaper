@@ -164,12 +164,12 @@ void drawGraph(ImageDriver& img) {
     }
     // Achsenbeschriftung
     img.drawCenteredText({220, 455}, "-10");
-    img.drawFilledRect({238, 469}, {10, 2});
+    img.drawFilledRect({240, 469}, {9, 2});
 
     img.drawText({225, 418}, "0");
     
     img.drawCenteredText({220, 280}, "30");
-    img.drawFilledRect({238, 290}, {10, 2});
+    img.drawFilledRect({240, 290}, {9, 2});
     img.drawCenteredText({265, 285}, "°c");
     //img.drawText({760, 417}, "Date");
 

@@ -232,8 +232,6 @@ bool DisplayDriver::waitIdle() const {
     int idle = 0;
     int x = 0;
     while (idle == 0) {
-        //printf(".");
-        //sendCommand(0x71); // Get Status (FLG) (R71h)
         idle = gpio_get_level(busy_pin);
         vTaskDelay(5);
         if(x++ > 1000){

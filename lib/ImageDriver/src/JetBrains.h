@@ -8,9 +8,6 @@
 #include "./Font.h"
 
 struct JetBrains {
-    /// Font data for Jetbrains 16px
-    static const Font font16;
-
     /// Font data for Jetbrains 24px
     static const Font font24;
 };

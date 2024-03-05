@@ -4,7 +4,6 @@
 #include <WifiDriver.h>
 
 #include "config.h"
-#include "driver/gpio.h"
 #include "esp_log.h"
 #include "esp_sleep.h"
 #include "esp_system.h"
@@ -148,9 +147,11 @@ void drawAPIData(ImageDriver& img) {
     imgCode = json["current"]["condition"]["code"].as<int>();
     printf("temp: %0.2f, humi: %0.2f, imgCode: %d\n", temp, humi, imgCode);
     img.drawImage({36, 56}, imgCodeToImg(imgCode));
-    img.drawText({70, 200}, std::to_string(temp) + " °c");
-    img.drawText({70, 240}, std::to_string(humi) + "%");
-
+    char buffer[64];
+    std::sprintf(buffer, "%5.2f °c", temp);
+    img.drawText({70, 200}, {buffer, 8});
+    std::sprintf(buffer, "%5.2f%%", humi);
+    img.drawText({70, 240}, {buffer, 6});
     addGraphData(temp);
 
     // todays value
@@ -163,10 +164,11 @@ void drawAPIData(ImageDriver& img) {
                   .as<int>();
     printf("%0.2f - %0.2f\n %0.2f\nImgCode: %d\n", minTemp, maxTemp, humi,
            imgCode);
+    std::sprintf(buffer, "%5.2f - %5.2f °c", minTemp, maxTemp);
     img.drawImage({236, 56}, imgCodeToImg(imgCode));
-    img.drawText({270, 200}, std::to_string(minTemp) + " - " +
-                                 std::to_string(maxTemp) + "°c");
-    img.drawText({270, 240}, std::to_string(humi) + "%");
+    img.drawText({270, 200}, {buffer, 16});
+    std::sprintf(buffer, "%5.2f%%", humi);
+    img.drawText({270, 240}, {buffer, 6});
 
     // forecast
     minTemp =
@@ -179,9 +181,10 @@ void drawAPIData(ImageDriver& img) {
     printf("%0.2f - %0.2f\n %0.2f\nImgCode: %d\n", minTemp, maxTemp, humi,
            imgCode);
     img.drawImage({436, 56}, imgCodeToImg(imgCode));
-    img.drawText({470, 200}, std::to_string(minTemp) + " - " +
-                                 std::to_string(maxTemp) + "°c");
-    img.drawText({470, 240}, std::to_string(humi) + "%");
+    std::sprintf(buffer, "%5.2f - %5.2f °c", minTemp, maxTemp);
+    img.drawText({470, 200}, {buffer, 16});
+    std::sprintf(buffer, "%5.2f%%", humi);
+    img.drawText({470, 240}, {buffer, 6});
 
     minTemp =
         json["forecast"]["forecastday"][2]["day"]["mintemp_c"].as<float>();
@@ -193,9 +196,10 @@ void drawAPIData(ImageDriver& img) {
     printf("%0.2f - %0.2f\n %0.2f\nImgCode: %d\n", minTemp, maxTemp, humi,
            imgCode);
     img.drawImage({636, 56}, imgCodeToImg(imgCode));
-    img.drawText({670, 200}, std::to_string(minTemp) + " - " +
-                                 std::to_string(maxTemp) + "°c");
-    img.drawText({670, 240}, std::to_string(humi) + "%");
+    std::sprintf(buffer, "%5.2f - %5.2f °c", minTemp, maxTemp);
+    img.drawText({670, 200}, {buffer, 16});
+    std::sprintf(buffer, "%5.2f%%", humi);
+    img.drawText({670, 240}, {buffer, 6});
 }
 
 extern "C" void app_main() {
@@ -204,9 +208,7 @@ extern "C" void app_main() {
     if ((reason != ESP_RST_DEEPSLEEP) && (reason != ESP_RST_SW)) {
         start = 0;
         end = 0;
-        for (int x = 0; x < GRAPHWIDTH; x++) {
-            graphData[x] = 0;
-        }
+        memset(graphData, 0, GRAPHWIDTH);
         printf("Initialized GraphData");
     }
 

@@ -8,8 +8,6 @@
 
 #include "esp_http_client.h"
 
-#define TAG "WifiDriver"
-
 enum class CallError { None, NoWifi, NoClient, Failed };
 
 using WifiCallback = std::function<void(std::span<const uint8_t>)>;

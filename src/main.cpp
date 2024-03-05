@@ -2,6 +2,7 @@
 #include <DisplayDriver.h>
 #include <ImageDriver.h>
 #include <WifiDriver.h>
+#include "sunnyImg.h"
 
 #include "config.h"
 #include "driver/gpio.h"
@@ -10,7 +11,7 @@
 #include "esp_system.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "sunnyImg.h"
+#include <optional>
 
 #define CONFIG_ARDUINO_LOOP_STACK_SIZE 16384
 
@@ -97,7 +98,7 @@ void drawGraph(ImageDriver& img) {
     }
 }
 
-JsonDocument getAPIData(std::string query) {
+std::optional<JsonDocument> getAPIData(std::string query) {
     JsonDocument json;
 
     int trys = 5;
@@ -105,7 +106,6 @@ JsonDocument getAPIData(std::string query) {
     DeserializationError err;
     for (int x = 0; x < trys; x++) {
         call = Wifi::call(query, [&json, &err](std::span<const uint8_t> data) {
-            //ESP_LOGI(TAG, "CALLBACK: %s\n", data.data());
             err = deserializeJson(json, data.data());
         });
         if(call == CallError::None && err == DeserializationError::Ok){
@@ -113,16 +113,22 @@ JsonDocument getAPIData(std::string query) {
         }
         vTaskDelay(pdMS_TO_TICKS(100));
     }
-    return json; //Todo Change to Nullptr
+    return std::nullopt;
 }
 
 void drawDatabaseData(ImageDriver& img){
     //printf("Getting Outside Data\n");
-    JsonDocument json = getAPIData(OUTSIDEURL);
+    auto answer = getAPIData(OUTSIDEURL);
+    if(!answer.has_value()){
+        return;
+    }
+    JsonDocument json = answer.value();
     temp = json[0]["Temp"].as<float>();
     humi = json[0]["Humidity"].as<float>();
-    img.drawText({70, 250}, std::to_string(temp) + " °c");
-    img.drawText({70, 290}, std::to_string(humi) + " %");
+    //img.drawText({100, 250}, std::to_string(temp) + " °c");
+    //img.drawText({70, 290}, std::to_string(humi) + " %");
+    img.drawCenteredText({100, 280}, std::to_string(temp) + " °c");
+    img.drawCenteredText({100, 320}, std::to_string(humi) + " %");
 
     img.drawFilledRect({33, 360}, {144, 2});
 
@@ -130,8 +136,8 @@ void drawDatabaseData(ImageDriver& img){
     json = getAPIData(INDOORURL);
     temp = json[0]["Temp"].as<float>();
     humi = json[0]["Humidity"].as<float>();
-    img.drawText({70, 400}, std::to_string(temp) + " °c");
-    img.drawText({70, 440}, std::to_string(humi) + " %");
+    img.drawCenteredText({100, 390}, std::to_string(temp) + " °c");
+    img.drawCenteredText({100, 430}, std::to_string(humi) + " %");
 
     date = json[0]["Date"].as<int>();
     hour = json[0]["Hour"].as<int>();
@@ -141,7 +147,11 @@ void drawDatabaseData(ImageDriver& img){
 
 void drawAPIData(ImageDriver& img) {
     printf("Getting API Data\n");
-    JsonDocument json = getAPIData(APIQUERY);
+    auto answer = getAPIData(INDOORURL);
+    if(!answer.has_value()){
+        return;
+    }
+    JsonDocument json = answer.value();
     // current values
     temp = json["current"]["temp_c"].as<float>();
     humi = json["current"]["humidity"].as<float>();

@@ -11,7 +11,7 @@
 #include "esp_system.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "sunnyImg.h"
+#include "Images.h"
 
 #define CONFIG_ARDUINO_LOOP_STACK_SIZE 16384
 
@@ -51,12 +51,55 @@ const std::string weekdays[] = {"Montag",  "Dienstag", "Mittwoch", "Donnerstag",
 
 Image imgCodeToImg(int code) {
     switch (code) {
-        case 1000:
-            return {sunnyImg, 128};
-        case 1003:
-            return {cloudyImg, 128};
-        default:
-            return {cloudImg, 128};
+        case 1000: return {sunnyImg, 128};
+        case 1003: return {cloudyImg, 128};
+        case 1006: return {cloudImg, 128};
+        case 1009: return {cloudImg, 128};
+        case 1030: return {cloudImg, 128};
+        case 1063: return {rainImg, 128};
+        case 1066: return {snowImg, 128};
+        case 1069: return {cloudImg, 128};
+        case 1072: return {cloudImg, 128};
+        case 1087: return {thunderImg, 128};
+        case 1114: return {snowImg, 128};
+        case 1117: return {snowImg, 128};
+        case 1135: return {cloudImg, 128};
+        case 1147: return {snowImg, 128};
+        case 1150: return {cloudyImg, 128};
+        case 1153: return {cloudImg, 128};
+        case 1168: return {cloudImg, 128};
+        case 1171: return {snowImg, 128};
+        case 1180: return {rainImg, 128};
+        case 1183: return {rainImg, 128};
+        case 1186: return {rainImg, 128};
+        case 1189: return {rainImg, 128};
+        case 1192: return {rainImg, 128};
+        case 1195: return {rainImg, 128};
+        case 1198: return {rainImg, 128};
+        case 1201: return {snowImg, 128};
+        case 1204: return {cloudyImg, 128};
+        case 1207: return {rainImg, 128};
+        case 1210: return {snowImg, 128};
+        case 1213: return {snowImg, 128};
+        case 1216: return {snowImg, 128};
+        case 1219: return {snowImg, 128};
+        case 1222: return {snowImg, 128};
+        case 1225: return {snowImg, 128};
+        case 1237: return {snowImg, 128};
+        case 1240: return {rainImg, 128};
+        case 1243: return {rainImg, 128};
+        case 1246: return {rainImg, 128};
+        case 1249: return {cloudImg, 128};
+        case 1252: return {snowImg, 128};
+        case 1255: return {snowImg, 128};
+        case 1258: return {snowImg, 128};
+        case 1261: return {snowImg, 128};
+        case 1264: return {snowImg, 128};
+        case 1273: return {thunderImg, 128};
+        case 1276: return {thunderImg, 128};
+        case 1279: return {thunderImg, 128};
+        case 1282: return {thunderImg, 128};
+        default: return {cloudImg, 128};
     }
 }
 
@@ -99,17 +142,38 @@ void addGraphData(float temp) {
     }
 }
 
+// draws an 2x2 Aquare at given position
+void drawRect(ImageDriver& img, Vec2u pos){
+    img.drawPoint({pos.x, pos.y});
+    img.drawPoint({pos.x + 1, pos.y});
+    img.drawPoint({pos.x, pos.y + 1});
+    img.drawPoint({pos.x + 1, pos.y + 1});
+}
+
 void drawGraph(ImageDriver& img) {
     // Displays temp -10 to 35 °C using 180 Pixel Height
     //  Pro Grad 4 Pixel
-    img.drawFilledRect({250, 428}, {500, 2});  // Nulllinie
+    img.drawFilledRect({240, 428}, {510, 2});  // Nulllinie
     img.drawFilledRect({248, 290}, {2, 200});  // Temp Anzeige
+
     for (unsigned int x = start; x != end; x = (x + 1) % GRAPHWIDTH) {
         printf("X: %d; Y: %d, Val: %d\n", 250 + x,
                (unsigned int)(470 - graphData[x]), graphData[x]);
-        img.drawPoint({250 + x, (unsigned int)(470 - graphData[x])});
+        drawRect(img, {250 + x, (unsigned int)(470 - graphData[x])});
         // TODO kontinuierliche Linie erzeugen
     }
+    // Achsenbeschriftung
+    img.drawCenteredText({220, 455}, "-10");
+    img.drawFilledRect({238, 469}, {10, 2});
+
+    img.drawText({225, 418}, "0");
+    
+    img.drawCenteredText({220, 280}, "30");
+    img.drawFilledRect({238, 290}, {10, 2});
+    img.drawCenteredText({265, 285}, "°c");
+    //img.drawText({760, 417}, "Date");
+
+    //TODO Tagesmarker
 }
 
 std::optional<JsonDocument> getAPIData(const std::string& query) {
@@ -152,7 +216,7 @@ void drawDatabaseData(ImageDriver& img) {
         data.hour = json[0]["Hour"].as<int>();
         data.minute = json[0]["Minute"].as<int>();
     }
-    img.drawFilledRect({50, 355}, {100, 2});
+    img.drawFilledRect({33, 365}, {134, 3});
 }
 
 void drawAPIData(ImageDriver& img) {
@@ -167,8 +231,7 @@ void drawAPIData(ImageDriver& img) {
     current.temp = json["current"]["temp_c"].as<float>();
     current.humi = json["current"]["humidity"].as<float>();
     current.imgCode = json["current"]["condition"]["code"].as<int>();
-    printf("temp: %0.2f, humi: %0.2f, imgCode: %d\n", current.temp,
-           current.humi, current.imgCode);
+    //printf("temp: %0.2f, humi: %0.2f, imgCode: %d\n", current.temp, current.humi, current.imgCode);
     img.drawImage({36, 56}, imgCodeToImg(current.imgCode));
     char buffer[64];
     std::sprintf(buffer, "%5.2f °c", current.temp);
@@ -188,8 +251,7 @@ void drawAPIData(ImageDriver& img) {
         day.imgCode =
             json["forecast"]["forecastday"][i]["day"]["condition"]["code"]
                 .as<int>();
-        printf("%0.2f - %0.2f C;  %0.2f %%; ImgCode: %d\n", day.minTemp, day.maxTemp,
-               day.humi, day.imgCode);
+        //printf("%0.2f - %0.2f C;  %0.2f %%; ImgCode: %d\n", day.minTemp, day.maxTemp, day.humi, day.imgCode);
         std::sprintf(buffer, "%5.2f - %5.2f °c", day.minTemp, day.maxTemp);
         Vec2u offset = {200 * i, 0};
         img.drawImage(Vec2u{236, 56} + offset, imgCodeToImg(day.imgCode));
@@ -230,6 +292,7 @@ extern "C" void app_main() {
     Wifi::init(WIFISSID, WIFIPASS);
     while(!Wifi::established){
         vTaskDelay(pdMS_TO_TICKS(100));
+        printf(".");
     }
 
     vTaskDelay(pdMS_TO_TICKS(1000));
@@ -241,7 +304,7 @@ extern "C" void app_main() {
 
     drawGraph(img);
 
-    img.drawText({450, 378}, std::to_string(end));
+    //img.drawText({450, 378}, std::to_string(end));
 
     display.show(img);
     vTaskDelay(pdMS_TO_TICKS(1000));

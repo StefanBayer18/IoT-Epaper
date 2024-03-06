@@ -5,19 +5,15 @@
 
 #include <optional>
 
+#include "Images.h"
 #include "config.h"
 #include "esp_log.h"
 #include "esp_sleep.h"
 #include "esp_system.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "Images.h"
-
-#define CONFIG_ARDUINO_LOOP_STACK_SIZE 16384
 
 #define TAG "MAIN"
-
-enum images { Sunny, SunCloud, Cloudy, Rain, Thunder };
 
 // FiFo Data Storage for Graph
 RTC_NOINIT_ATTR uint8_t
@@ -49,57 +45,111 @@ RTC_NOINIT_ATTR struct Data {
 const std::string weekdays[] = {"Montag",  "Dienstag", "Mittwoch", "Donnerstag",
                                 "Freitag", "Samstag",  "Sonntag"};
 
+/**
+ * @brief Converts an Code given by the API into an image
+ * @param code The code of the image
+ * @return An image
+ */
 Image imgCodeToImg(int code) {
     switch (code) {
-        case 1000: return {sunnyImg, 128};
-        case 1003: return {cloudyImg, 128};
-        case 1006: return {cloudImg, 128};
-        case 1009: return {cloudImg, 128};
-        case 1030: return {cloudImg, 128};
-        case 1063: return {rainImg, 128};
-        case 1066: return {snowImg, 128};
-        case 1069: return {cloudImg, 128};
-        case 1072: return {cloudImg, 128};
-        case 1087: return {thunderImg, 128};
-        case 1114: return {snowImg, 128};
-        case 1117: return {snowImg, 128};
-        case 1135: return {cloudImg, 128};
-        case 1147: return {snowImg, 128};
-        case 1150: return {cloudyImg, 128};
-        case 1153: return {cloudImg, 128};
-        case 1168: return {cloudImg, 128};
-        case 1171: return {snowImg, 128};
-        case 1180: return {rainImg, 128};
-        case 1183: return {rainImg, 128};
-        case 1186: return {rainImg, 128};
-        case 1189: return {rainImg, 128};
-        case 1192: return {rainImg, 128};
-        case 1195: return {rainImg, 128};
-        case 1198: return {rainImg, 128};
-        case 1201: return {snowImg, 128};
-        case 1204: return {cloudyImg, 128};
-        case 1207: return {rainImg, 128};
-        case 1210: return {snowImg, 128};
-        case 1213: return {snowImg, 128};
-        case 1216: return {snowImg, 128};
-        case 1219: return {snowImg, 128};
-        case 1222: return {snowImg, 128};
-        case 1225: return {snowImg, 128};
-        case 1237: return {snowImg, 128};
-        case 1240: return {rainImg, 128};
-        case 1243: return {rainImg, 128};
-        case 1246: return {rainImg, 128};
-        case 1249: return {cloudImg, 128};
-        case 1252: return {snowImg, 128};
-        case 1255: return {snowImg, 128};
-        case 1258: return {snowImg, 128};
-        case 1261: return {snowImg, 128};
-        case 1264: return {snowImg, 128};
-        case 1273: return {thunderImg, 128};
-        case 1276: return {thunderImg, 128};
-        case 1279: return {thunderImg, 128};
-        case 1282: return {thunderImg, 128};
-        default: return {cloudImg, 128};
+        case 1000:
+            return {sunnyImg, 128};
+        case 1003:
+            return {cloudyImg, 128};
+        case 1006:
+            return {cloudImg, 128};
+        case 1009:
+            return {cloudImg, 128};
+        case 1030:
+            return {cloudImg, 128};
+        case 1063:
+            return {rainImg, 128};
+        case 1066:
+            return {snowImg, 128};
+        case 1069:
+            return {cloudImg, 128};
+        case 1072:
+            return {cloudImg, 128};
+        case 1087:
+            return {thunderImg, 128};
+        case 1114:
+            return {snowImg, 128};
+        case 1117:
+            return {snowImg, 128};
+        case 1135:
+            return {cloudImg, 128};
+        case 1147:
+            return {snowImg, 128};
+        case 1150:
+            return {cloudyImg, 128};
+        case 1153:
+            return {cloudImg, 128};
+        case 1168:
+            return {cloudImg, 128};
+        case 1171:
+            return {snowImg, 128};
+        case 1180:
+            return {rainImg, 128};
+        case 1183:
+            return {rainImg, 128};
+        case 1186:
+            return {rainImg, 128};
+        case 1189:
+            return {rainImg, 128};
+        case 1192:
+            return {rainImg, 128};
+        case 1195:
+            return {rainImg, 128};
+        case 1198:
+            return {rainImg, 128};
+        case 1201:
+            return {snowImg, 128};
+        case 1204:
+            return {cloudyImg, 128};
+        case 1207:
+            return {rainImg, 128};
+        case 1210:
+            return {snowImg, 128};
+        case 1213:
+            return {snowImg, 128};
+        case 1216:
+            return {snowImg, 128};
+        case 1219:
+            return {snowImg, 128};
+        case 1222:
+            return {snowImg, 128};
+        case 1225:
+            return {snowImg, 128};
+        case 1237:
+            return {snowImg, 128};
+        case 1240:
+            return {rainImg, 128};
+        case 1243:
+            return {rainImg, 128};
+        case 1246:
+            return {rainImg, 128};
+        case 1249:
+            return {cloudImg, 128};
+        case 1252:
+            return {snowImg, 128};
+        case 1255:
+            return {snowImg, 128};
+        case 1258:
+            return {snowImg, 128};
+        case 1261:
+            return {snowImg, 128};
+        case 1264:
+            return {snowImg, 128};
+        case 1273:
+            return {thunderImg, 128};
+        case 1276:
+            return {thunderImg, 128};
+        case 1279:
+            return {thunderImg, 128};
+        case 1282:
+            return {thunderImg, 128};
+        default:
+            return {cloudImg, 128};
     }
 }
 
@@ -142,8 +192,8 @@ void addGraphData(float temp) {
     }
 }
 
-// draws an 2x2 Aquare at given position
-void drawRect(ImageDriver& img, Vec2u pos){
+// draws an 2x2 Square at given position
+void drawRect(ImageDriver& img, Vec2u pos) {
     img.drawPoint({pos.x, pos.y});
     img.drawPoint({pos.x + 1, pos.y});
     img.drawPoint({pos.x, pos.y + 1});
@@ -157,15 +207,17 @@ void drawGraph(ImageDriver& img) {
     img.drawFilledRect({248, 290}, {2, 200});  // Temp Anzeige
 
     float prev = graphData[start];
-
+    int size = 0;
     for (unsigned int x = start; x != end; x = (x + 1) % GRAPHWIDTH) {
+        size++;
         drawRect(img, {250 + x, (unsigned int)(470 - graphData[x])});
         int diff = std::abs(graphData[x] - prev);
-        if(diff <= 1) continue;
+        if (diff <= 1) continue;
 
         int dir = prev > graphData[x] ? -1 : 1;
-        for(int i = 0; i < diff; i++){
-            drawRect(img, {250 + (i >= (diff/2) ? x : (x-1)), (unsigned int)(470 - (prev + i * dir))});
+        for (int i = 0; i < diff; i++) {
+            drawRect(img, {250 + (i >= (diff / 2) ? x : (x - 1)),
+                           (unsigned int)(470 - (prev + i * dir))});
         }
         prev = graphData[x];
     }
@@ -174,12 +226,20 @@ void drawGraph(ImageDriver& img) {
     img.drawFilledRect({240, 469}, {9, 2});
 
     img.drawText({225, 418}, "0");
-    
+
     img.drawCenteredText({220, 280}, "30");
     img.drawFilledRect({240, 290}, {9, 2});
     img.drawCenteredText({265, 285}, "°c");
 
-    //TODO Tagesmarker
+    // Drawing Daylines
+    int measuresPerHour = 60 / sleepTimer;
+    auto& data = measurements[DataInside];
+    int offset = (data.minute / sleepTimer) + (data.hour * measuresPerHour);
+    size -= offset;
+    while (size > 0) {
+        img.drawFilledRect({(unsigned int)(250 + size), 420}, {2, 20});
+        size -= measuresPerHour * 24;
+    }
 }
 
 std::optional<JsonDocument> getAPIData(const std::string& query) {
@@ -201,6 +261,7 @@ std::optional<JsonDocument> getAPIData(const std::string& query) {
 }
 
 void drawDatabaseData(ImageDriver& img) {
+    bool updateData = true;
     static auto urls =
         std::array{std::string(OUTSIDEURL), std::string(INDOORURL)};
     static auto dataIndex = std::array{DataOutside, DataInside};
@@ -208,61 +269,67 @@ void drawDatabaseData(ImageDriver& img) {
     for (size_t i = 0; i < urls.size(); ++i) {
         auto answer = getAPIData(urls[i]);
         if (!answer.has_value()) {
-            return;
+            updateData = false;
         }
         JsonDocument json = *answer;
         auto& data = measurements[dataIndex[i]];
-        data.temp = json[0]["Temp"].as<float>();
-        data.humi = json[0]["Humidity"].as<float>();
+        if (updateData) {
+            data.temp = json[0]["Temp"].as<float>();
+            data.humi = json[0]["Humidity"].as<float>();
+            data.date = json[0]["Date"].as<int>();
+            data.hour = json[0]["Hour"].as<int>();
+            data.minute = json[0]["Minute"].as<int>();
+        }
         std::sprintf(buffer, "%5.2f °c", data.temp);
-        img.drawCenteredText({100, 280 + i * 110}, {buffer, 8});
-        std::sprintf(buffer, "%5.2f%%", data.humi);
-        img.drawCenteredText({100, 320 + i * 110}, {buffer, 6});
-        data.date = json[0]["Date"].as<int>();
-        data.hour = json[0]["Hour"].as<int>();
-        data.minute = json[0]["Minute"].as<int>();
+        img.drawCenteredText({100, 280 + i * 110}, {buffer, 9});
+        std::sprintf(buffer, "%5.2f %%", data.humi);
+        img.drawCenteredText({100, 320 + i * 110}, {buffer, 7});
     }
     img.drawFilledRect({33, 365}, {134, 3});
 }
 
 void drawAPIData(ImageDriver& img) {
     printf("Getting API Data\n");
+    bool updateData = true;
+    char buffer[64];
     auto answer = getAPIData(APIQUERY);
     if (!answer.has_value()) {
-        return;
+        // Display old Data
+        updateData = false;
     }
     JsonDocument json = *answer;
     // current values
     auto& current = measurements[DataCurrent];
-    current.temp = json["current"]["temp_c"].as<float>();
-    current.humi = json["current"]["humidity"].as<float>();
-    current.imgCode = json["current"]["condition"]["code"].as<int>();
-    //printf("temp: %0.2f, humi: %0.2f, imgCode: %d\n", current.temp, current.humi, current.imgCode);
+    if (updateData) {
+        current.temp = json["current"]["temp_c"].as<float>();
+        current.humi = json["current"]["humidity"].as<float>();
+        current.imgCode = json["current"]["condition"]["code"].as<int>();
+    }
     img.drawImage({36, 56}, imgCodeToImg(current.imgCode));
-    char buffer[64];
     std::sprintf(buffer, "%5.2f °c", current.temp);
-    img.drawCenteredText({100, 200}, {buffer, 8});
-    std::sprintf(buffer, "%5.2f%%", current.humi);
-    img.drawCenteredText({100, 240}, {buffer, 6});
+    img.drawCenteredText({100, 200}, {buffer, 9});
+    std::sprintf(buffer, "%5.2f %%", current.humi);
+    img.drawCenteredText({100, 240}, {buffer, 7});
     for (size_t i = 0; i < 3; ++i) {
         // forecast and today value
         auto& day = measurements[i];
-        day.minTemp =
-            json["forecast"]["forecastday"][i]["day"]["mintemp_c"].as<float>();
-        day.maxTemp =
-            json["forecast"]["forecastday"][i]["day"]["maxtemp_c"].as<float>();
-        day.humi = json["forecast"]["forecastday"][i]["day"]["avghumidity"]
-                       .as<float>();
-        day.imgCode =
-            json["forecast"]["forecastday"][i]["day"]["condition"]["code"]
-                .as<int>();
-        //printf("%0.2f - %0.2f C;  %0.2f %%; ImgCode: %d\n", day.minTemp, day.maxTemp, day.humi, day.imgCode);
+        if (updateData) {
+            day.minTemp = json["forecast"]["forecastday"][i]["day"]["mintemp_c"]
+                              .as<float>();
+            day.maxTemp = json["forecast"]["forecastday"][i]["day"]["maxtemp_c"]
+                              .as<float>();
+            day.humi = json["forecast"]["forecastday"][i]["day"]["avghumidity"]
+                           .as<float>();
+            day.imgCode =
+                json["forecast"]["forecastday"][i]["day"]["condition"]["code"]
+                    .as<int>();
+        }
         std::sprintf(buffer, "%5.2f - %5.2f °c", day.minTemp, day.maxTemp);
         Vec2u offset = {200 * i, 0};
         img.drawImage(Vec2u{236, 56} + offset, imgCodeToImg(day.imgCode));
-        img.drawCenteredText(Vec2u{300, 200} + offset, {buffer, 16});
-        std::sprintf(buffer, "%5.2f%%", day.humi);
-        img.drawCenteredText(Vec2u{300, 240} + offset, {buffer, 6});
+        img.drawCenteredText(Vec2u{300, 200} + offset, {buffer, 17});
+        std::sprintf(buffer, "%5.2f %%", day.humi);
+        img.drawCenteredText(Vec2u{300, 240} + offset, {buffer, 7});
     }
 }
 
@@ -283,7 +350,6 @@ extern "C" void app_main() {
             data.hour = -1;
             data.minute = -1;
         }
-        printf("Initialized GraphData");
     }
     ESP_LOGI(TAG, "Hello World");
     DisplayDriver display{DOUT, SCLK, CS, DC, RST, BUSY};
@@ -294,7 +360,7 @@ extern "C" void app_main() {
     drawBorderLines(img);
 
     Wifi::init(WIFISSID, WIFIPASS);
-    while(!Wifi::established){
+    while (!Wifi::established) {
         vTaskDelay(pdMS_TO_TICKS(100));
         printf(".");
     }
@@ -305,12 +371,10 @@ extern "C" void app_main() {
     vTaskDelay(pdMS_TO_TICKS(1000));
     drawDatabaseData(img);
     drawWeekdays(img);
-    
+
     addGraphData(measurements[DataOutside].temp);
 
     drawGraph(img);
-
-    //img.drawText({450, 378}, std::to_string(end));
 
     display.show(img);
     vTaskDelay(pdMS_TO_TICKS(1000));
@@ -320,6 +384,6 @@ extern "C" void app_main() {
     display.sleep();
     vTaskDelay(pdMS_TO_TICKS(1000));
     printf("Done with the Code.\nGoing to sleep now.\n");
-    esp_sleep_enable_timer_wakeup(450 * 1000000);
+    esp_sleep_enable_timer_wakeup(sleepTimer * 60 * 1000000);
     esp_deep_sleep_start();
 }

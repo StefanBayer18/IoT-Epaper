@@ -156,11 +156,18 @@ void drawGraph(ImageDriver& img) {
     img.drawFilledRect({240, 428}, {510, 2});  // Nulllinie
     img.drawFilledRect({248, 290}, {2, 200});  // Temp Anzeige
 
+    float prev = graphData[start];
+
     for (unsigned int x = start; x != end; x = (x + 1) % GRAPHWIDTH) {
-        printf("X: %d; Y: %d, Val: %d\n", 250 + x,
-               (unsigned int)(470 - graphData[x]), graphData[x]);
         drawRect(img, {250 + x, (unsigned int)(470 - graphData[x])});
-        // TODO kontinuierliche Linie erzeugen
+        int diff = std::abs(graphData[x] - prev);
+        if(diff <= 1) continue;
+
+        int dir = prev > graphData[x] ? -1 : 1;
+        for(int i = 0; i < diff; i++){
+            drawRect(img, {250 + (i >= (diff/2) ? x : (x-1)), (unsigned int)(470 - (prev + i * dir))});
+        }
+        prev = graphData[x];
     }
     // Achsenbeschriftung
     img.drawCenteredText({220, 455}, "-10");
@@ -171,7 +178,6 @@ void drawGraph(ImageDriver& img) {
     img.drawCenteredText({220, 280}, "30");
     img.drawFilledRect({240, 290}, {9, 2});
     img.drawCenteredText({265, 285}, "°c");
-    //img.drawText({760, 417}, "Date");
 
     //TODO Tagesmarker
 }
@@ -238,7 +244,6 @@ void drawAPIData(ImageDriver& img) {
     img.drawCenteredText({100, 200}, {buffer, 8});
     std::sprintf(buffer, "%5.2f%%", current.humi);
     img.drawCenteredText({100, 240}, {buffer, 6});
-    addGraphData(current.temp);
     for (size_t i = 0; i < 3; ++i) {
         // forecast and today value
         auto& day = measurements[i];
@@ -280,7 +285,6 @@ extern "C" void app_main() {
         }
         printf("Initialized GraphData");
     }
-
     ESP_LOGI(TAG, "Hello World");
     DisplayDriver display{DOUT, SCLK, CS, DC, RST, BUSY};
     // ESP_LOGI(TAG, "Init Display");
@@ -301,6 +305,8 @@ extern "C" void app_main() {
     vTaskDelay(pdMS_TO_TICKS(1000));
     drawDatabaseData(img);
     drawWeekdays(img);
+    
+    addGraphData(measurements[DataOutside].temp);
 
     drawGraph(img);
 

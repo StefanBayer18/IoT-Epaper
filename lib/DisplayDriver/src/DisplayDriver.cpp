@@ -7,6 +7,10 @@
 
 #define TAG "DISPLAYDRIVER"
 
+// Code based on expample given by Waveshare
+// https://www.waveshare.com/wiki/E-Paper_ESP32_Driver_Board
+// https://files.waveshare.com/upload/6/60/7.5inch_e-Paper_V2_Specification.pdf
+
 uint8_t LUT_VCOM_7IN5_V2[]={	
 	0x0,	0xF,	0xF,	0x0,	0x0,	0x1,	
 	0x0,	0xF,	0x1,	0xF,	0x1,	0x2,	
@@ -57,7 +61,15 @@ uint8_t LUT_BB_7IN5_V2[]={
 	0x0,	0x0,	0x0,	0x0,	0x0,	0x0,	
 };
 
-
+/**
+     * @brief Initializes the Display
+     * @param DIN Pin connected to Data In on Display
+     * @param CS Chip select Pin
+     * @param RST Pin connected to reset Pin
+     * @param SCLK Pin used for clock
+     * @param DC Used to differentiate Data and Commands
+     * @param Busy Input pin used to check if display is ready
+     */
 DisplayDriver::DisplayDriver(const gpio_num_t DIN, const gpio_num_t SCLK,
                              const gpio_num_t CS, const gpio_num_t DC,
                              const gpio_num_t RST, const gpio_num_t BUSY) {
@@ -104,9 +116,12 @@ void DisplayDriver::editLUT(uint8_t* lut_vcom,  uint8_t* lut_ww, uint8_t* lut_bw
 		sendData(lut_bb[count]);
 }
 
+/**
+     * @brief Initializes the Display using given Values from example
+     */
 void DisplayDriver::initDisplay() const {
-    // BWRmode & LUT from register (Page: 20)
-    do{
+    // Process based on: BWRmode & LUT from register (Page: 20)
+    
     reset();
 
     // Power Setting (PWR) (R01h)
@@ -120,7 +135,7 @@ void DisplayDriver::initDisplay() const {
     sendCommand(0x82);  // VCOM DC Setting
 	sendData(0x24);  // VCOM
 
-    // Booster Soft Start
+    // Booster Soft Start (BTST) (R06h)
     sendCommand(0x06);
     sendData(0x27);
     sendData(0x27);
@@ -128,40 +143,43 @@ void DisplayDriver::initDisplay() const {
     sendData(0x17);
 
     printf("Turning Device on\n");
-    sendCommand(0x04); // Turn device on
+    sendCommand(0x04); // Power ON (PON) (Register: R04h
     vTaskDelay(pdMS_TO_TICKS(50));
-    }
-    while(!waitIdle());
+    waitIdle();
     printf("Device powered on\n");
 
-    sendCommand(0X00);			//PANNEL SETTING
+    // Panel Setting (PSR) 
+    sendCommand(0X00);			
     sendData(0x3F);
 
-    sendCommand(0x61);        	//tres
-    sendData(0x03);		//source 800
+    // Resolution Setting (TRES) 
+    sendCommand(0x61);        	
+    sendData(0x03);
     sendData(0x20);
-    sendData(0x01);		//gate 480
+    sendData(0x01);
     sendData(0xE0);
 
+    // Dual SPI Mode (DUSPI)
     sendCommand(0X15);
     sendData(0x00);
 
-    sendCommand(0X50);			//VCOM AND DATA INTERVAL SETTING
+    // VCOM and Data interval Setting (CDI)
+    sendCommand(0X50);
     sendData(0x10);
     sendData(0x00);
 
-    sendCommand(0X60);			//TCON SETTING
+    // TCON Setting (TCON)
+    sendCommand(0X60);
     sendData(0x22);
 
-    sendCommand(0x65);  // Resolution setting
+    // Gate/Source Start Setting
+    sendCommand(0x65);
     sendData(0x00);
-    sendData(0x00);//800*480
+    sendData(0x00);
     sendData(0x00);
     sendData(0x00);
 
     editLUT(LUT_VCOM_7IN5_V2, LUT_WW_7IN5_V2, LUT_BW_7IN5_V2, LUT_WB_7IN5_V2, LUT_BB_7IN5_V2);
-
-    ESP_LOGI(TAG, "Done Waiting succesfully\n");
 }
 
 /**
@@ -184,7 +202,7 @@ void DisplayDriver::show(const ImageDriver& img) const {
 
 /**
  *  Clears Display Image
- *  @param bytes Amount of Bytes of Display
+ *  @param bytes Size of Display in Bytes
  */
 void DisplayDriver::clear(size_t bytes) const {
     sendCommand(0x13); // Data Start Transmission 2 (DTM2) (R13h)
@@ -198,6 +216,7 @@ void DisplayDriver::clear(size_t bytes) const {
 
 /**
  *  Sends Data to the Display
+ * @param data Data to be send
  */
 void DisplayDriver::sendData(uint8_t data) const {
     ESP_ERROR_CHECK(gpio_set_level(dc_pin, 1));
@@ -206,6 +225,7 @@ void DisplayDriver::sendData(uint8_t data) const {
 
 /**
  *  Sends an Command to the Display
+ * @param cmd Command to be send
  */
 void DisplayDriver::sendCommand(char cmd) const {
     ESP_ERROR_CHECK(gpio_set_level(dc_pin, 0));
@@ -235,11 +255,9 @@ bool DisplayDriver::waitIdle() const {
         idle = gpio_get_level(busy_pin);
         vTaskDelay(5);
         if(x++ > 1000){
-            printf("Couldnt start Display-------------------\n");
             return false;
         }
     }
-    printf("Done Waiting Succesfully\n");
     return true;
 }
 

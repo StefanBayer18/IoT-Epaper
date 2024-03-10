@@ -9,6 +9,9 @@
 
 volatile bool Wifi::established = false;
 
+/**
+ * @brief Event handler for Wifi events
+ */
 static void wifi_event_handler(void *event_handler_arg,
                                esp_event_base_t event_base, int32_t event_id,
                                void *event_data) {
@@ -21,14 +24,12 @@ static void wifi_event_handler(void *event_handler_arg,
         Wifi::established = false;
         ESP_LOGI(TAG, "retry to connect to the AP");
         esp_wifi_connect();
-    } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) { // Doesnt execute
+    } else if (event_base == IP_EVENT &&
+               event_id == IP_EVENT_STA_GOT_IP) {  // Doesn't execute on our ESP
         auto *event = static_cast<ip_event_got_ip_t *>(event_data);
         ESP_LOGI(TAG, "got ip:" IPSTR, IP2STR(&(event->ip_info.ip)));
         Wifi::established = true;
-    } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_CONNECTED){
-        Wifi::established = true;
-    }
-    else {
+    } else {
         ESP_LOGI(TAG, "unhandled event (%s) with ID %ld!", event_base,
                  event_id);
     }
@@ -42,15 +43,21 @@ CallError Wifi::call(std::string url, WifiCallback callback) {
 }
 
 void Wifi::init(std::string_view ssid, std::string_view password) {
-    ESP_ERROR_CHECK(esp_netif_init());
-    ESP_ERROR_CHECK(esp_event_loop_create_default());
-    esp_netif_create_default_wifi_sta();
+    // Init phase
+    ESP_ERROR_CHECK(esp_netif_init());  // Init Lightweight TCP/IP
+    ESP_ERROR_CHECK(esp_event_loop_create_default());  // Init event
+    esp_netif_create_default_wifi_sta();               // Init WiFi
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     cfg.nvs_enable = false;
-    ESP_ERROR_CHECK(esp_wifi_init(&cfg));
+    ESP_ERROR_CHECK(esp_wifi_init(&cfg));  // Create WiFi driver task
+
+    // Configure phase
     ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID,
                                                wifi_event_handler, nullptr));
+    ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, ESP_EVENT_ANY_ID,
+                                               wifi_event_handler, nullptr));
     wifi_config_t wifi_config = {};
+    // Copy ssid and password to wifi_config
     std::memcpy(wifi_config.sta.ssid, ssid.data(),
                 std::min(ssid.size(), sizeof(wifi_config.sta.ssid)));
     std::memcpy(wifi_config.sta.password, password.data(),
@@ -58,6 +65,8 @@ void Wifi::init(std::string_view ssid, std::string_view password) {
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_set_config(
         static_cast<wifi_interface_t>(ESP_IF_WIFI_STA), &wifi_config));
+
+    // Start phase
     ESP_ERROR_CHECK(esp_wifi_start());
 }
 
@@ -77,7 +86,8 @@ CallError WifiCall::operator()() {
     }
     esp_http_client_config_t config = {};
     config.url = this->url.c_str();
-    config.user_data = this;
+    config.user_data =
+        this;  // Save the pointer to this object in the user data
     config.event_handler = [](esp_http_client_event_t *evt) {
         if (evt == nullptr) {
             ESP_LOGE(TAG, "Event is null");
@@ -98,6 +108,7 @@ CallError WifiCall::operator()() {
             }
             case HTTP_EVENT_ON_FINISH: {
                 ESP_LOGI(TAG, "Finished");
+                // Use the user data to retrieve the call object
                 auto call = static_cast<WifiCall *>(evt->user_data);
                 if (!call) {
                     ESP_LOGE(TAG, "No user data");
@@ -107,22 +118,12 @@ CallError WifiCall::operator()() {
                 break;
             }
             case HTTP_EVENT_ERROR:
-                // ESP_LOGE(TAG, "HTTP_EVENT_ERROR");
-                break;
-            case HTTP_EVENT_ON_CONNECTED:
-                // ESP_LOGI(TAG, "HTTP_EVENT_ON_CONNECTED");
-                break;
-            case HTTP_EVENT_HEADER_SENT:
-                // ESP_LOGI(TAG, "HTTP_EVENT_HEADER_SENT");
-                break;
-            case HTTP_EVENT_ON_HEADER:
-                // ESP_LOGI(TAG, "HTTP_EVENT_ON_HEADER");
+                ESP_LOGE(TAG, "HTTP_EVENT_ERROR");
                 break;
             case HTTP_EVENT_DISCONNECTED:
-                // ESP_LOGI(TAG, "HTTP_EVENT_DISCONNECTED");
+                ESP_LOGI(TAG, "HTTP_EVENT_DISCONNECTED");
                 break;
-            case HTTP_EVENT_REDIRECT:
-                // ESP_LOGI(TAG, "HTTP_EVENT_REDIRECT");
+            default:
                 break;
         }
         return ESP_OK;

@@ -1,9 +1,18 @@
+/**
+ * @author AntonPieper
+ * @brief Font data structure
+ */
+
 #ifndef FONT_H
 #define FONT_H
 
 #include <cstdint>
 #include <span>
 
+/**
+ * @brief Structure containing information about a glyph
+ *
+ */
 struct GlyphDescription {
     /** Glyph width in pixels */
     uint8_t w_px;
@@ -11,6 +20,10 @@ struct GlyphDescription {
     uint16_t glyph_index;
 };
 
+/**
+ * @brief Structure containing information about a font
+ *
+ */
 struct Font {
     /** List of unicode characters */
     std::span<const uint8_t> unicode_list;
@@ -28,4 +41,4 @@ struct Font {
     uint8_t h_px;
 };
 
-#endif //FONT_H
+#endif  // FONT_H

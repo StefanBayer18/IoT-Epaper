@@ -1,20 +1,31 @@
+/**
+ * @brief Image driver class
+ * @author AntonPieper, Stefan
+ */
 #ifndef IMAGEDRIVER_H
 
 #define IMAGEDRIVER_H
 
 #include <climits>
+#include <cstdio>
 #include <span>
-#include <vector>
 #include <string_view>
+#include <vector>
+
 #include "./Image.h"
 #include "./Vec2.h"
-#include <cstdio>
 
 class ImageDriver {
 public:
     /// Internal element type of the image
     using Element = uint8_t;
 
+    /**
+     * @brief Construct a new Image Driver object
+     *
+     * @param width The width of the image in pixels
+     * @param height The height of the image in pixels
+     */
     ImageDriver(size_t width, size_t height);
 
     /**
@@ -64,19 +75,13 @@ public:
      */
     void drawFilledRect(Vec2u pos, Vec2u size);
 
-    [[nodiscard]] constexpr size_t width() const {
-        return mWidth;
-    }
+    [[nodiscard]] constexpr size_t width() const { return mWidth; }
 
-    [[nodiscard]] constexpr size_t height() const {
-        return mHeight;
-    }
+    [[nodiscard]] constexpr size_t height() const { return mHeight; }
 
-    [[nodiscard]] constexpr size_t size() const {
-        return mImgSize;
-    }
+    [[nodiscard]] constexpr size_t size() const { return mImgSize; }
 
-    [[nodiscard]] constexpr uint8_t operator [](size_t index) const {
+    [[nodiscard]] constexpr uint8_t operator[](size_t index) const {
         return mImg[index];
     }
 
@@ -85,6 +90,7 @@ public:
 private:
     /**
      * @brief Converts a pixel coordinate to a byte index and a bit mask
+     *
      * @param coord The coordinates of the pixel
      * @return A pair consisting of the byte index and a bit mask
      */
@@ -93,12 +99,21 @@ private:
         if (coord.x >= mWidth || coord.y >= mHeight) {
             return {};
         }
-        const size_t index = (coord.y * mInternalWidth) + (coord.x / elementSize);
-        const Element mask = static_cast<Element>(1) << (elementSize - (coord.x % elementSize) - 1);
+        const size_t index =
+            (coord.y * mInternalWidth) + (coord.x / elementSize);
+        const Element mask = static_cast<Element>(1)
+                             << (elementSize - (coord.x % elementSize) - 1);
         return {index, mask};
     }
 
-    void drawVerticalLine(Vec2u, Element, size_t);
+    /**
+     * @brief Draws a vertical line inside one element
+     *
+     * @param pos The position of the top of the line
+     * @param mask The mask to draw the line with
+     * @param height The height of the line
+     */
+    void drawVerticalLine(Vec2u pos, Element mask, size_t height);
 
     size_t mWidth;
     size_t mInternalWidth;

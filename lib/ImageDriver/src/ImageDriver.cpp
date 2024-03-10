@@ -8,7 +8,7 @@
 #include "./JetBrains.h"
 #include "esp_log.h"
 
-#define IMAGETAG "IMAGEDRIVER"
+#define TAG "IMAGEDRIVER"
 
 ImageDriver::ImageDriver(size_t width, size_t height)
     : mWidth(width),
@@ -18,38 +18,30 @@ ImageDriver::ImageDriver(size_t width, size_t height)
       mImg(mImgSize, 0) {}
 
 void ImageDriver::drawImage(Vec2u coord, const Image &image) {
-    // image => Übergebenes Element
-    // display => Bildschirm speicher
     auto shift = coord.x % elementSize;  // Amount to shift to right
 
     for (int imgY = 0; imgY < image.height(); imgY++) {
         for (int imgX = 0; imgX < image.byteWidth(); imgX++) {
-            size_t displayPos =
-                coord2index({coord.x + imgX * elementSize, coord.y + imgY})
-                    .first;
-            size_t imgPos = imgY * image.byteWidth() + imgX;
-            mImg[displayPos] |= image.data()[imgPos] >> shift;
-            if ((displayPos + 1) % mInternalWidth ==
-                0) {  // Reached right end of Display
+            Vec2u pixelCoord = {coord.x + imgX * elementSize, coord.y + imgY};
+            size_t displayIndex = coord2index(pixelCoord).first;
+            size_t imgIndex = imgY * image.byteWidth() + imgX;
+            mImg[displayIndex] |= image.data()[imgIndex] >> shift;
+            // Reached right end of display?
+            if ((displayIndex + 1) % mInternalWidth == 0) {
                 break;
             }
-            mImg[displayPos + 1] |= image.data()[imgPos]
-                                    << (elementSize - shift);
+            mImg[displayIndex + 1] |= image.data()[imgIndex]
+                                      << (elementSize - shift);
         }
-        if (imgY + coord.y + 1 == mHeight) {  // Reached bottom end of display
+
+        // Reached bottom end of display?
+        if (imgY + coord.y + 1 == mHeight) {
             break;
         }
     }
 }
 
 void ImageDriver::drawLine(Vec2u from, Vec2u to) {
-    // Horizontal Line
-    if(from.x == to.x){
-        const auto [index, mask] = coord2index({from.x, from.y});
-        for(int y = 0; y < to.y - from.y; y++){
-            mImg[index + y * mInternalWidth] |= mask;
-        }
-    }
     // Bresenham algorithm (gradient <= 1)
     const Vec2i d = static_cast<Vec2i>(to) - static_cast<Vec2i>(from);
     int D = (d.y + d.y) - d.x;
@@ -75,6 +67,7 @@ void ImageDriver::drawFilledRect(Vec2u pos, Vec2u size) {
     if (pos.x >= mWidth || pos.y >= mHeight) {
         return;
     }
+
     unsigned width = std::min(mWidth - pos.x, size.x);
     unsigned height = std::min(mHeight - pos.y, size.y);
 
@@ -85,7 +78,7 @@ void ImageDriver::drawFilledRect(Vec2u pos, Vec2u size) {
     Element endMask = 0xffu << rightOffset;
 
     if (pos.x / elementSize == (pos.x + size.x) / elementSize) {
-        // Alles in einem Byte
+        // All in one element
         drawVerticalLine(pos, startMask & endMask, height);
         return;
     }
@@ -107,8 +100,10 @@ void ImageDriver::drawPoint(Vec2u coord) {
     }
 }
 
-void ImageDriver::drawCenteredText(Vec2u coord, std::string_view text){
-    const Font &font = JetBrains::font24;
+void ImageDriver::drawCenteredText(Vec2u coord, std::string_view text) {
+    const Font &font = JetBrains::font24;  // Hardcoded font
+
+    // Measure text width
     int width = 0;
     for (auto ch : text) {
         const auto it =
@@ -120,30 +115,38 @@ void ImageDriver::drawCenteredText(Vec2u coord, std::string_view text){
         const auto &dsc = font.glyph_dsc[index];
         width += dsc.w_px;
     }
-    drawText({coord.x - width/2, coord.y}, text);
+
+    // Draw text at the center by subtracting half of the width
+    drawText({coord.x - width / 2, coord.y}, text);
 }
 
 void ImageDriver::drawText(Vec2u coord, std::string_view text) {
-    const Font &font = JetBrains::font24;
+    const Font &font = JetBrains::font24;  // Hardcoded font
+
+    // Draw each character
     for (auto ch : text) {
+        // Find the glyph descriptor index for the character which is the index
+        // of the character in the unicode list
         const auto it =
             std::find(font.unicode_list.begin(), font.unicode_list.end(), ch);
         if (it == font.unicode_list.end()) {
-            // std::cerr << "Character" <<  ch << "not found in font" <<
-            // std::endl;
-            //ESP_LOGI(IMAGETAG, "Char not found\n");
             continue;
         }
         const auto index = std::distance(font.unicode_list.begin(), it);
+
         const auto &dsc = font.glyph_dsc[index];
 
-        // TODO: See if this actually works
+        // Get the glyph image and size
         auto glyph = &font.glyph_bitmap[dsc.glyph_index];
         auto byteSize = (dsc.w_px + elementSize - 1) / elementSize;
         auto size = static_cast<size_t>(byteSize * font.h_px);
+
+        // Draw the glyph image
         const std::span glyphSpan{glyph, size};
         Image img = Image(glyphSpan, dsc.w_px);
         drawImage(coord, img);
+
+        // Move to the next character
         coord.x += dsc.w_px;
     }
 }

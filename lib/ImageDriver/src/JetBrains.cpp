@@ -2,6 +2,8 @@
 
 #include "Font.h"
 
+// Generated using https://lvgl.io/tools/font_conv_v5_3
+
 /***********************************************************************************
  * JetBrains Mono Bold Nerd Font Complete.ttf 24 px Font in U+0020 ( ) .. U+2710
  *(✐)  range with 1 bpp Sparse font with only these characters:

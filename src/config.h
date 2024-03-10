@@ -1,3 +1,8 @@
+/**
+ * @brief Configuration file for the weather station
+ * @author Stefan
+ */
+
 #ifndef CONFIG
 #define CONFIG
 
@@ -10,19 +15,23 @@
 #define BUSY GPIO_NUM_25
 
 // Image Dimensions
-#define IMGWIDTH 800
-#define IMGHEIGTH 480
-#define GRAPHWIDTH 500
+#define IMG_WIDTH 800
+#define IMG_HEIGTH 480
+#define GRAPH_WIDTH 500
 
 // Wifi
-#define WIFISSID "EMPTY"
-#define WIFIPASS "EMPTY"
+#define WIFI_SSID "EMPTY"
+#define WIFI_PASS "EMPTY"
 
 // Database
-#define OUTSIDEURL "http://192.168.188.53/outside.php"
-#define INDOORURL "http://192.168.188.53/room.php"
+#define OUTSIDE_URL "http://192.168.188.53/outside.php"
+#define INDOOR_URL "http://192.168.188.53/room.php"
 
+#define SLEEP_TIMER 15
 // API
-#define APIQUERY "http://api.weatherapi.com/v1/forecast.json?key=PLACEAPIKEYHERE&q=Bad Hersfeld&days=3&aqi=no&alerts=no"
+#define API_QUERY                                            \
+    "http://api.weatherapi.com/v1/"                          \
+    "forecast.json?key=PLACEAPIKEYHERE&q=PLACEYOURPLACEHERE" \
+    "&days=3&aqi=no&alerts=no"
 
 #endif

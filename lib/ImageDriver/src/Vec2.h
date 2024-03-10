@@ -1,8 +1,19 @@
+/**
+ * @brief A 2D vector.
+ * @author AntonPieper
+ */
+
 #ifndef VEC2_H
 #define VEC2_H
 
 #include <cmath>
 #include <cstddef>
+
+/**
+ * @brief A 2D vector.
+ *
+ * @tparam T The type of the vector components.
+ */
 template <typename T>
 struct Vec2 {
     constexpr Vec2() = default;

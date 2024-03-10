@@ -1,3 +1,11 @@
+/**
+ * @brief Code based on example given by Waveshare, slightly changed by Stefan
+ * @author Waveshare, Stefan
+ * @see https://www.waveshare.com/wiki/E-Paper_ESP32_Driver_Board
+ * @see
+ *      https://files.waveshare.com/upload/6/60/7.5inch_e-Paper_V2_Specification.pdf
+ */
+
 #ifndef DISPLAYDRIVER
 #define DISPLAYDRIVER
 
@@ -5,10 +13,6 @@
 #include <driver/spi_master.h>
 
 #include "driver/gpio.h"
-
-// Code based on expample given by Waveshare slightly changed by Stefan
-// https://www.waveshare.com/wiki/E-Paper_ESP32_Driver_Board
-// https://files.waveshare.com/upload/6/60/7.5inch_e-Paper_V2_Specification.pdf
 
 class DisplayDriver {
 public:

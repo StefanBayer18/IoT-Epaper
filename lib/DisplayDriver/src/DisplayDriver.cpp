@@ -7,10 +7,6 @@
 
 #define TAG "DISPLAYDRIVER"
 
-// Code based on expample given by Waveshare
-// https://www.waveshare.com/wiki/E-Paper_ESP32_Driver_Board
-// https://files.waveshare.com/upload/6/60/7.5inch_e-Paper_V2_Specification.pdf
-
 uint8_t LUT_VCOM_7IN5_V2[]={	
 	0x0,	0xF,	0xF,	0x0,	0x0,	0x1,	
 	0x0,	0xF,	0x1,	0xF,	0x1,	0x2,	
@@ -116,9 +112,7 @@ void DisplayDriver::editLUT(uint8_t* lut_vcom,  uint8_t* lut_ww, uint8_t* lut_bw
 		sendData(lut_bb[count]);
 }
 
-/**
-     * @brief Initializes the Display using given Values from example
-     */
+
 void DisplayDriver::initDisplay() const {
     // Process based on: BWRmode & LUT from register (Page: 20)
     
@@ -182,10 +176,6 @@ void DisplayDriver::initDisplay() const {
     editLUT(LUT_VCOM_7IN5_V2, LUT_WW_7IN5_V2, LUT_BW_7IN5_V2, LUT_WB_7IN5_V2, LUT_BB_7IN5_V2);
 }
 
-/**
- *  Displays given Image on the Display
- *  @param img Image to display from ImageDriver
- */
 void DisplayDriver::show(const ImageDriver& img) const {
     sendCommand(0x10); // Data Start Transmission 1 (DTM1) (R13h)
     for (int x = 0; x < img.size(); x++) {
@@ -200,10 +190,6 @@ void DisplayDriver::show(const ImageDriver& img) const {
     waitIdle();
 }
 
-/**
- *  Clears Display Image
- *  @param bytes Size of Display in Bytes
- */
 void DisplayDriver::clear(size_t bytes) const {
     sendCommand(0x13); // Data Start Transmission 2 (DTM2) (R13h)
     for (int x = 0; x < bytes; x++) {
@@ -214,27 +200,16 @@ void DisplayDriver::clear(size_t bytes) const {
     waitIdle();
 }
 
-/**
- *  Sends Data to the Display
- * @param data Data to be send
- */
 void DisplayDriver::sendData(uint8_t data) const {
     ESP_ERROR_CHECK(gpio_set_level(dc_pin, 1));
     sendSPI(data);
 }
 
-/**
- *  Sends an Command to the Display
- * @param cmd Command to be send
- */
 void DisplayDriver::sendCommand(char cmd) const {
     ESP_ERROR_CHECK(gpio_set_level(dc_pin, 0));
     sendSPI(cmd);
 }
 
-/**
- *  Resets Display Configuration
- */
 void DisplayDriver::reset() const {
     gpio_set_level(reset_pin, 1);
     vTaskDelay(pdMS_TO_TICKS(200));
@@ -244,9 +219,6 @@ void DisplayDriver::reset() const {
     vTaskDelay(pdMS_TO_TICKS(200));
 }
 
-/**
- *  Wait for Display to finish Interaction
- */
 bool DisplayDriver::waitIdle() const {
     //vTaskDelay(pdMS_TO_TICKS(20));
     int idle = 0;
@@ -261,9 +233,6 @@ bool DisplayDriver::waitIdle() const {
     return true;
 }
 
-/**
- *  Puts Display into Deep Sleep mode
- */
 void DisplayDriver::sleep() const {
     sendCommand(0X02); // Power OFF (POF) (R02h)
     waitIdle();
@@ -271,9 +240,6 @@ void DisplayDriver::sleep() const {
     sendData(0xA5);    // check code = 0xA5
 }
 
-/**
- *  Initialize SPI connection
- */
 void DisplayDriver::initSPI() {
     spi_bus_config_t buscfg{};
     buscfg.mosi_io_num = dout_pin;
@@ -294,9 +260,6 @@ void DisplayDriver::initSPI() {
     ESP_ERROR_CHECK(spi_bus_add_device(HSPI_HOST, &dev_config, &spi));
 }
 
-/**
- *  Sends Data to Display via SPI
- */
 void DisplayDriver::sendSPI(const uint8_t data) const {
     spi_transaction_t t{};
     t.length = 8;

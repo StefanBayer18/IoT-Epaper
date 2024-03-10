@@ -52,6 +52,7 @@
     "span": "cpp",
     "optional": "cpp",
     "iostream": "cpp",
-    "bitset": "cpp"
+    "bitset": "cpp",
+    "cstring": "cpp"
   }
 }

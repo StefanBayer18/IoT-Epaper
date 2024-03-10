@@ -108,6 +108,7 @@ Image imgCodeToImg(int code) {
         case 1282:
             return {thunderImg, 128};
         default:
+            ESP_LOGE(TAG, "Unknown Code: %d", code);
             return {cloudImg, 128};
     }
 }

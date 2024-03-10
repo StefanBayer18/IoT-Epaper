@@ -63,9 +63,6 @@ public:
      * @param size Size of the square.
      */
     void drawFilledRect(Vec2u pos, Vec2u size);
-    
-
-    void drawGraph(Vec2u min, Vec2u end, std::span<const Vec2f> points);
 
     [[nodiscard]] constexpr size_t width() const {
         return mWidth;

@@ -17,11 +17,6 @@ ImageDriver::ImageDriver(size_t width, size_t height)
       mImgSize(mInternalWidth * height),
       mImg(mImgSize, 0) {}
 
-void ImageDriver::drawGraph(Vec2u min, Vec2u end,
-                            std::span<const Vec2f> points) {
-    // TODO: Implement
-}
-
 void ImageDriver::drawImage(Vec2u coord, const Image &image) {
     // image => Übergebenes Element
     // display => Bildschirm speicher

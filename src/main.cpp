@@ -55,97 +55,56 @@ Image imgCodeToImg(int code) {
         case 1000:
             return {sunnyImg, 128};
         case 1003:
+        case 1150:
+        case 1204:
             return {cloudyImg, 128};
         case 1006:
-            return {cloudImg, 128};
         case 1009:
-            return {cloudImg, 128};
         case 1030:
-            return {cloudImg, 128};
-        case 1063:
-            return {rainImg, 128};
-        case 1066:
-            return {snowImg, 128};
         case 1069:
-            return {cloudImg, 128};
         case 1072:
+        case 1135:
+        case 1168:
+        case 1249:
             return {cloudImg, 128};
         case 1087:
             return {thunderImg, 128};
         case 1114:
-            return {snowImg, 128};
         case 1117:
-            return {snowImg, 128};
-        case 1135:
-            return {cloudImg, 128};
         case 1147:
-            return {snowImg, 128};
-        case 1150:
-            return {cloudyImg, 128};
         case 1153:
-            return {cloudImg, 128};
-        case 1168:
-            return {cloudImg, 128};
         case 1171:
-            return {snowImg, 128};
-        case 1180:
-            return {rainImg, 128};
-        case 1183:
-            return {rainImg, 128};
-        case 1186:
-            return {rainImg, 128};
-        case 1189:
-            return {rainImg, 128};
-        case 1192:
-            return {rainImg, 128};
-        case 1195:
-            return {rainImg, 128};
-        case 1198:
-            return {rainImg, 128};
         case 1201:
-            return {snowImg, 128};
-        case 1204:
-            return {cloudyImg, 128};
-        case 1207:
-            return {rainImg, 128};
-        case 1210:
-            return {snowImg, 128};
-        case 1213:
-            return {snowImg, 128};
-        case 1216:
-            return {snowImg, 128};
-        case 1219:
-            return {snowImg, 128};
+        case 1066:
         case 1222:
-            return {snowImg, 128};
-        case 1225:
-            return {snowImg, 128};
         case 1237:
-            return {snowImg, 128};
-        case 1240:
-            return {rainImg, 128};
-        case 1243:
-            return {rainImg, 128};
-        case 1246:
-            return {rainImg, 128};
-        case 1249:
-            return {cloudImg, 128};
         case 1252:
-            return {snowImg, 128};
         case 1255:
-            return {snowImg, 128};
         case 1258:
-            return {snowImg, 128};
         case 1261:
-            return {snowImg, 128};
         case 1264:
             return {snowImg, 128};
+        case 1180:
+        case 1183:
+        case 1186:
+        case 1189:
+        case 1192:
+        case 1195:
+        case 1198:
+        case 1207:
+        case 1210:
+        case 1213:
+        case 1216:
+        case 1219:
+        case 1225:
+        case 1240:
+        case 1243:
+        case 1246:
+        case 1063:
+            return {rainImg, 128};
         case 1273:
-            return {thunderImg, 128};
         case 1276:
-            return {thunderImg, 128};
         case 1279:
-            return {thunderImg, 128};
         case 1282:
             return {thunderImg, 128};
         default:

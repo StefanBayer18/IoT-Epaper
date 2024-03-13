@@ -226,14 +226,14 @@ void drawGraph(ImageDriver& img) {
         size++;
         int diff = std::abs(graphData[x] - prev);
         if (diff <= 1) {
-            drawRect(img, {offsetX + x, offsetY - graphData[x]});
+            drawRect(img, {offsetX + size, offsetY - graphData[x]});
             continue;
         }
 
         int dirY = prev > graphData[x] ? -1 : 1;
         for (int i = 0; i < diff; i++) {
             bool right = i >= (diff / 2);
-            drawRect(img, {offsetX + (right ? x : (x - 1)),
+            drawRect(img, {offsetX + (right ? size : (size - 1)),
                            offsetY - (prev + i * dirY)});
         }
         prev = graphData[x];
